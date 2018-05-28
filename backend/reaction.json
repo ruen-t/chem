@@ -1,0 +1,24 @@
+{
+    "reaction": [
+        {
+            "id": 0,
+            "name": "reaction0",
+            "smart": "[O:2]=[C:1][O:3][C;H3]>>[O:2]=[C:1][O:3]"
+        },
+        {
+            "id": 1,
+            "name": "reaction1",
+            "smart": "[O:2]=[C:1][O:3][C;H2][C;H3]>>[O:2]=[C:1][O:3]"
+        },
+        {
+            "id": 2,
+            "name": "reaction2",
+            "smart": "[O:2]=[C:1][O:3][C;H2][C;H2][C;H3]>>[O:2]=[C:1][O:3]"
+        },
+        {
+            "id": 3,
+            "name": "reaction3",
+            "smart": "[O:2]=[C:1][O:3][C;H2][C;H2][C;H2][C;H3]>>[O:2]=[C:1][O:3]"
+        }
+    ]
+}

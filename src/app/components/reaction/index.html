@@ -1,0 +1,76 @@
+<section>
+  <div layout="row">
+    <md-content class="md-padding" flex=70 style="background-color:white;">
+      <form ng-submit="$event.preventDefault()">
+
+        <md-autocomplete ng-disabled="vm.isDisabled" md-no-cache="vm.noCache" md-selected-item="vm.selectedItem" md-search-text-change="vm.searchTextChange(vm.searchText)"
+          md-search-text="vm.searchText" md-selected-item-change="vm.selectedItemChange(item)" md-items="item in vm.querySearch(vm.searchText)"
+          md-item-text="item.display" md-min-length="0" placeholder="Search reaction">
+          <md-item-template>
+            <span md-highlight-text="vm.searchText" md-highlight-flags="gi">{{item.display}}</span>
+          </md-item-template>
+          <md-not-found>
+            No states matching "{{vm.searchText}}" were found.
+            <a ng-click="vm.newState(vm.searchText)">Create a new one!</a>
+          </md-not-found>
+
+        </md-autocomplete>
+
+        <br/>
+
+      </form>
+
+    </md-content>
+    <md-button id="execute" ng-click="vm.addReaction()" class="md-fab ">
+      <md-icon class="material-icons">add_circle</md-icon>
+    </md-button>
+  </div>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <ul id="sortable">
+
+    <li ng-repeat="item in vm.selectedReactionList" class="ui-state-default" layout-padding style="padding-bottom: 10px;">
+      <div layout="row">
+        <md-whiteframe class="md-whiteframe-2dp" flex-sm="45" flex-gt-sm="45" flex-gt-md="55" layout layout-align="left center">
+          <span style="padding-left:10px">{{item.display}}</span>
+        </md-whiteframe>
+     
+              <md-input-container  layout-padding  flex=40>
+                <label>Reagent</label>
+                <input ng-model="item.input_reagent">
+              </md-input-container>
+             
+          
+       
+        <md-button id="execute" ng-click="vm.removeReaction(item.id)" class="md-warn" layout ayout-align="right center">
+          <md-icon class="material-icons">clear</md-icon>
+        </md-button>
+      </div>
+
+    </li>
+
+  </ul>
+  <div layout-margin layout-padding layout="row">
+
+    <choose-file layout="row" flex="40">
+      <input id="fileInput" type="file" class="ng-hide">
+      <md-input-container flex class="md-block">
+        <input type="text" ng-model="fileName" disabled>
+        <div class="hint">Input reactant</div>
+      </md-input-container>
+      <div>
+        <md-button id="uploadButton" class="md-primary md-fab md-mini">
+          <md-icon class="material-icons">attach_file</md-icon>
+        </md-button>
+      </div>
+    </choose-file>
+    
+
+
+  </div>
+
+  <md-button id="execute" ng-click="vm.sendRequest()" class="md-fab md-mini">
+    <md-icon class="material-icons">send</md-icon>
+  </md-button>
+</section>
