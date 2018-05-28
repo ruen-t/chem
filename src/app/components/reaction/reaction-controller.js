@@ -1,8 +1,9 @@
 var host = "http://35.198.250.233/"
 var RUN_REACTION_API = host + "upload"
 var GET_REACTION_API = host + "resource/reaction"
+var GET_OUTPUT_API = host+'download/'
 class ReactionController {
-    constructor($scope, $log, $http, $q, $timeout) {
+    constructor($scope, $log, $http, $q, $timeout, $window) {
         console.log("ReactionController")
         var self = this;
         self.simulateQuery = false;
@@ -10,6 +11,7 @@ class ReactionController {
         self.message = "hello"
         self.reagentRequired = false;
         self.selectedReactionList = [];
+        self.preview = [1,2,3,4,5,6]
         // list of `state` value/display objects
         // self.states = loadAll();
         self.querySearch = querySearch;
@@ -20,6 +22,8 @@ class ReactionController {
         self.addReaction = addReaction;
         self.removeReaction = removeReaction;
         self.currentSearchedReaction = {};
+        self.downloadFile = downloadFile;
+        self.outputReady = false;
         $("#sortable").sortable();
         $("#sortable").disableSelection();
         function checkReagentInput() {
@@ -44,8 +48,11 @@ class ReactionController {
             }
             checkReagentInput();
         }
+        function downloadFile(){
+            $window.open(GET_OUTPUT_API+self.outputFile,'_blank');
+        }
         function sendRequest() {
-
+            
             var payload = new FormData();
             payload.append("file", $scope.file);
             var reaction = [];
@@ -65,7 +72,10 @@ class ReactionController {
                 //prevents serializing payload.  don't do it.
                 transformRequest: angular.identity
             }).then(function (response) {
-                console.log(response);
+                var data =  JSON.parse(response.data);
+                console.log(data)
+                self.outputFile = data.output;
+                self.outputReady = true;
             }, function (error) {
                 console.log(error)
             })

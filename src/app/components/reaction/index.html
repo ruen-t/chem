@@ -37,7 +37,7 @@
         </md-whiteframe>
      
               <md-input-container  layout-padding  flex=40>
-                <label>Reagent</label>
+                <label>Reagent (smile input)</label>
                 <input ng-model="item.input_reagent">
               </md-input-container>
              
@@ -70,7 +70,12 @@
 
   </div>
 
-  <md-button id="execute" ng-click="vm.sendRequest()" class="md-fab md-mini">
-    <md-icon class="material-icons">send</md-icon>
+  <md-button id="execute" ng-click="vm.sendRequest()" class="md-fab ">
+    <md-icon class="material-icons">play_circle_outline</md-icon>
   </md-button>
+  <md-button ng-if="vm.outputReady" ng-click="vm.downloadFile()" class="md-fab ">
+      <md-icon class="material-icons">save_alt</md-icon>
+    </md-button>
+  
+   
 </section>

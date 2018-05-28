@@ -8,6 +8,8 @@ from rdkit.Chem import AllChem
 from pythonds.basic.stack import Stack
 import os
 import json
+import datetime
+import time
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 UPLOAD_FOLDER = '/home/tanapat_ruengsatra/htdocs/input'
@@ -70,9 +72,8 @@ def initReactionList():
 rxn_list = initReactionList()
 def findReactionById(id):
     for rxn in rxn_list:
-        print("id:"+str(rxn.id))
         if(rxn.id == int(id)):
-            print("match")
+            print("match" + str(rxn.id))
             return rxn
     return None
 
@@ -86,22 +87,20 @@ class StackItem:
 
 def runReaction(rxn, mol_reactant, reagent=None):
     products = []
-    #print("run: " + Chem.MolToSmiles(mol_reactant))
     try:
-        result = rxn.RunReactants((mol_reactant,reagent))
+        if reagent!=None:
+            result = rxn.RunReactants((mol_reactant,reagent))
+        else:
+            result = rxn.RunReactants((mol_reactant,))
         try: 
             if result[0]:
                 for product in result[0]:
-                    #result_smile = Chem.MolToSmiles(product)
-                    products.append(product)
-            #print(str(products[0])+' compound'+ str(index+1))        
+                    products.append(product)       
         except IndexError:
             products.append(mol_reactant)
-            #print(str(smile)+' compound'+ str(index+1))
     except Exception:
         products.append(mol_reactant)
     return products
-
 
 
 def loopReaction(rxn, mol_ractant,reagent = None, loop_num = 1):
@@ -145,8 +144,8 @@ def readFile(filename):
 def executeFile(filename, input_rxn_list):
     mol_list = readFile(filename)
     for rxn in input_rxn_list:
-        rxn_id = rxn['reaction']
-        if rxn.reagent:
+        rxn_id = int(rxn['reaction'])
+        if hasattr(rxn, 'reagent') and rxn['reagent'] != None:
             print(rxn['reagent'])
             reagent = Chem.MolFromSmiles(rxn['reagent'])
         else:
@@ -154,12 +153,15 @@ def executeFile(filename, input_rxn_list):
         rxnItem = findReactionById(rxn_id)
         rxn = rxnItem.rxn
         mol_list = runReactionList(rxn, mol_list, loop_num=2, reagent=reagent)
-    w = Chem.SmilesWriter(app.config['OUTPUT_FOLDER']+'/output.smi')
-    result = app.config['OUTPUT_FOLDER']+'/output.smi'
+    ts = time.time()
+    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+    output_file = 'output'+st+'.smi'
+    w = Chem.SmilesWriter(app.config['OUTPUT_FOLDER']+'/'+output_file)
+    result = output_file
     for index, mol in enumerate(mol_list):
         smile = Chem.MolToSmiles(mol)
-        print(smile)
         w.write(mol)
+        print(str(smile) + " compound " + str(index+1))
         #result += str(smile)+' compound'+ str(index+1)
     return result
 
@@ -183,9 +185,10 @@ def upload_file():
         if 'file' not in request.files:
             return str({'status':'error'})  
         file = request.files['file']
-        reaction = request.form['reaction']
-        for r in json.loads(reaction):
-            print(r['id'])
+        reaction = json.loads(request.form['reaction'])
+        print(reaction)
+        for rxn in reaction:
+            print(str(rxn['reaction']))
         #reaction = request.args.get('reaction', None)
         #reaction_list = reaction.split(',')
         #for r in reaction_list:
@@ -193,14 +196,14 @@ def upload_file():
         # if user does not select file, browser also
         # submit a empty part without filename
         if file.filename == '':
-            return str({'status':'no file'})
+            return json.dumps({'status':'no file'})
           
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
             result = executeFile(file_path, reaction)
-            return str({'result':result})
+            return json.dumps({"output":result})
 
 
 @app.route('/download/<path:filename>')
