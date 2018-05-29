@@ -1,3 +1,3 @@
 angular
-  .module('app', ['ui.router','ngMaterial'])
+  .module('app', ['ui.router','ngMaterial', 'angular-loading-bar'])
  

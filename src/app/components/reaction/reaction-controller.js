@@ -3,7 +3,7 @@ var RUN_REACTION_API = host + "upload"
 var GET_REACTION_API = host + "resource/reaction"
 var GET_OUTPUT_API = host + 'download/'
 class ReactionController {
-    constructor($scope, $log, $http, $q, $timeout, $window) {
+    constructor($scope, $log, $http, $q, $timeout, $window, $mdDialog) {
         console.log("ReactionController")
         var self = this;
         self.simulateQuery = false;
@@ -20,6 +20,7 @@ class ReactionController {
         self.sendRequest = sendRequest;
         self.newState = newState;
         self.addReaction = addReaction;
+        self.addNewReaction = addNewReaction;
         self.removeReaction = removeReaction;
         self.currentSearchedReaction = null;
         self.downloadFile = downloadFile;
@@ -27,7 +28,17 @@ class ReactionController {
         $("#sortable").sortable();
         $("#sortable").disableSelection();
 
-     
+
+        function addNewReaction(ev) {
+            $mdDialog.show({
+                controller: DialogController,
+                templateUrl: 'app/components/reaction/dialog/new-reaction-dialog.html',
+                parent: angular.element(document.body),
+                targetEvent: ev,
+                clickOutsideToClose: true,
+                fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
+            })
+        }
         function addReaction() {
             if (self.currentSearchedReaction != null) {
                 self.selectedReactionList.push(self.currentSearchedReaction);
@@ -120,8 +131,14 @@ class ReactionController {
         }
 
         function selectedItemChange(item) {
-            self.currentSearchedReaction = item;
-            $log.info('Item changed to ' + JSON.stringify(item));
+            if (item != null) {
+                self.currentSearchedReaction = item;
+                addReaction();
+                //self.selectedItem = null;
+                //self.searchText = "";
+                $log.info('Item changed to ' + JSON.stringify(item));
+            }
+
 
         }
         function newState(state) {
@@ -136,10 +153,10 @@ class ReactionController {
                 return (state.name.includes(lowercaseQuery));
             };
         }
-        function createLoopChoice(){
+        function createLoopChoice() {
             var choice = [];
-            for(var i = 1;i<=5;i++){
-                choice.push({display:i, value:i});
+            for (var i = 1; i <= 5; i++) {
+                choice.push({ display: i, value: i });
             }
             return choice;
         }
@@ -148,6 +165,7 @@ class ReactionController {
     }
 
 }
+
 angular
     .module('app')
     .component('reaction', {

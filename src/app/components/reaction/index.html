@@ -21,7 +21,7 @@
       </form>
 
     </md-content>
-    <md-button id="execute" ng-click="vm.addReaction()" class="md-fab ">
+    <md-button id="execute" ng-click="vm.addNewReaction($event)" class="md-fab ">
       <md-icon class="material-icons">add_circle</md-icon>
     </md-button>
   </div>
@@ -30,9 +30,9 @@
 
   <ul id="sortable">
 
-    <li ng-repeat="item in vm.selectedReactionList" class="ui-state-default" layout-padding style="padding-bottom: 10px;">
+    <li ng-repeat="item in vm.selectedReactionList track by $index" class="ui-state-default" layout-padding style="padding-bottom: 10px;">
       <div layout="row">
-        <md-whiteframe class="md-whiteframe-2dp" flex-sm="45" flex-gt-sm="45" flex-gt-md="55" layout layout-align="left center">
+        <md-whiteframe class="md-whiteframe-2dp" flex-sm="60" flex-gt-sm="60" flex-gt-md="70" layout layout-align="left center">
           <div style="padding-left:10px" flex=65>{{item.display}}</div>
           <div layout layout-align="right right" flex=15>
             <md-input-container flex="70">
@@ -49,7 +49,7 @@
           </div>
         </md-whiteframe>
 
-        <md-input-container ng-if="item.hasReagent" layout-padding flex=40>
+        <md-input-container ng-if="item.hasReagent" layout-padding flex=30>
           <label>Reagent (smile input)</label>
           <input ng-model="item.input_reagent">
         </md-input-container>

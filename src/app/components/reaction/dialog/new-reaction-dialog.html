@@ -1,0 +1,27 @@
+<md-dialog>
+    <form>
+        <title>New Reaction</title>
+        <md-input-container>
+            <label>Name</label>
+            <input ng-model="name">
+        </md-input-container>
+        <md-input-container>
+            <label>Smart</label>
+            <input ng-model="smart">
+        </md-input-container>
+        <md-input-container>
+                <label>Description</label>
+                <input ng-model="description">
+            </md-input-container>
+        <md-dialog-actions layout="row">
+
+            <md-button ng-click="cancel('not useful')">
+                Cancel
+            </md-button>
+            <md-button ng-click="create()">
+                Create
+            </md-button>
+        </md-dialog-actions>
+    </form>
+
+</md-dialog>
