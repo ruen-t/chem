@@ -151,19 +151,24 @@ def executeFile(filename, input_rxn_list):
         else:
             reagent = None
         rxnItem = findReactionById(rxn_id)
-        rxn = rxnItem.rxn
-        mol_list = runReactionList(rxn, mol_list, loop_num=2, reagent=reagent)
+        rxn_object = rxnItem.rxn
+        loop = int(rxn['loop'])
+        print('Loop: '+str(loop))
+        mol_list = runReactionList(rxn_object, mol_list, loop_num=loop, reagent=reagent)
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
     output_file = 'output'+st+'.smi'
-    w = Chem.SmilesWriter(app.config['OUTPUT_FOLDER']+'/'+output_file)
+    w= open(app.config['OUTPUT_FOLDER']+'/'+output_file,"w+")
+    #w = Chem.SmilesWriter(app.config['OUTPUT_FOLDER']+'/'+output_file)
     result = output_file
+    sample = ''
     for index, mol in enumerate(mol_list):
         smile = Chem.MolToSmiles(mol)
-        w.write(mol)
-        print(str(smile) + " compound " + str(index+1))
-        #result += str(smile)+' compound'+ str(index+1)
-    return result
+        w.write("%s compound%d\n"  %(smile, (index+1)))
+        if (index < 50):
+            sample += "%s compound%d\n"  %(smile, (index+1))
+        #print(str(smile) + " compound " + str(index+1))
+    return result, sample
 
 
 @app.route('/')
@@ -188,7 +193,8 @@ def upload_file():
         reaction = json.loads(request.form['reaction'])
         print(reaction)
         for rxn in reaction:
-            print(str(rxn['reaction']))
+            print(rxn)
+            print(str(rxn['reaction'])+ ": Loop: "+str(rxn['loop']))
         #reaction = request.args.get('reaction', None)
         #reaction_list = reaction.split(',')
         #for r in reaction_list:
@@ -202,8 +208,8 @@ def upload_file():
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
-            result = executeFile(file_path, reaction)
-            return json.dumps({"output":result})
+            result, sample = executeFile(file_path, reaction)
+            return json.dumps({"output":result, "sample": sample})
 
 
 @app.route('/download/<path:filename>')

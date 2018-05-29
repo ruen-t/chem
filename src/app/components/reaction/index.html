@@ -33,16 +33,29 @@
     <li ng-repeat="item in vm.selectedReactionList" class="ui-state-default" layout-padding style="padding-bottom: 10px;">
       <div layout="row">
         <md-whiteframe class="md-whiteframe-2dp" flex-sm="45" flex-gt-sm="45" flex-gt-md="55" layout layout-align="left center">
-          <span style="padding-left:10px">{{item.display}}</span>
+          <div style="padding-left:10px" flex=65>{{item.display}}</div>
+          <div layout layout-align="right right" flex=15>
+            <md-input-container flex="70">
+              <label>Loop</label>
+              <md-select name="loop" ng-model="item.loop">
+                <md-option ng-repeat="choice in vm.loopChoice" ng-value="choice.value">{{choice.display}}</md-option>
+              </md-select>
+            </md-input-container>
+          </div>
+          <div>
+            <md-input-container>
+              <md-switch ng-model="item.hasReagent">Reagent</md-switch>
+            </md-input-container>
+          </div>
         </md-whiteframe>
-     
-              <md-input-container  layout-padding  flex=40>
-                <label>Reagent (smile input)</label>
-                <input ng-model="item.input_reagent">
-              </md-input-container>
-             
-          
-       
+
+        <md-input-container ng-if="item.hasReagent" layout-padding flex=40>
+          <label>Reagent (smile input)</label>
+          <input ng-model="item.input_reagent">
+        </md-input-container>
+
+
+
         <md-button id="execute" ng-click="vm.removeReaction(item.id)" class="md-warn" layout ayout-align="right center">
           <md-icon class="material-icons">clear</md-icon>
         </md-button>
@@ -65,7 +78,7 @@
         </md-button>
       </div>
     </choose-file>
-    
+
 
 
   </div>
@@ -74,8 +87,12 @@
     <md-icon class="material-icons">play_circle_outline</md-icon>
   </md-button>
   <md-button ng-if="vm.outputReady" ng-click="vm.downloadFile()" class="md-fab ">
-      <md-icon class="material-icons">save_alt</md-icon>
-    </md-button>
-  
-   
+    <md-icon class="material-icons">save_alt</md-icon>
+  </md-button>
+
+  <md-input-container class="md-block" flex="50" style="padding-left:40px; ">
+    <label style="padding-left:40px;">Sample Result</label>
+    <textarea ng-model="vm.sampleResult" style="max-height:400px;min-height:400px; resize: none; overflow-y:scroll" rows="5"
+      md-select-on-focus></textarea>
+  </md-input-container>
 </section>

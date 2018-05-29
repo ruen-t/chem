@@ -1,19 +1,19 @@
 var host = "http://35.198.250.233/"
 var RUN_REACTION_API = host + "upload"
 var GET_REACTION_API = host + "resource/reaction"
-var GET_OUTPUT_API = host+'download/'
+var GET_OUTPUT_API = host + 'download/'
 class ReactionController {
     constructor($scope, $log, $http, $q, $timeout, $window) {
         console.log("ReactionController")
         var self = this;
         self.simulateQuery = false;
         self.isDisabled = false;
-        self.message = "hello"
         self.reagentRequired = false;
         self.selectedReactionList = [];
-        self.preview = [1,2,3,4,5,6]
+        self.preview = [1, 2, 3, 4, 5, 6]
+        self.loopChoice = createLoopChoice();
         // list of `state` value/display objects
-        // self.states = loadAll();
+        self.states = loadAll();
         self.querySearch = querySearch;
         self.selectedItemChange = selectedItemChange;
         self.searchTextChange = searchTextChange;
@@ -21,22 +21,19 @@ class ReactionController {
         self.newState = newState;
         self.addReaction = addReaction;
         self.removeReaction = removeReaction;
-        self.currentSearchedReaction = {};
+        self.currentSearchedReaction = null;
         self.downloadFile = downloadFile;
         self.outputReady = false;
         $("#sortable").sortable();
         $("#sortable").disableSelection();
-        function checkReagentInput() {
-            self.reagentRequired = false;
-            self.selectedReactionList.forEach(function (item) {
-                if (item.reagent) {
-                    self.reagentRequired = true;
-                }
-            });
-        }
+
+     
         function addReaction() {
-            self.selectedReactionList.push(self.currentSearchedReaction);
-            checkReagentInput();
+            if (self.currentSearchedReaction != null) {
+                self.selectedReactionList.push(self.currentSearchedReaction);
+                self.currentSearchedReaction = null;
+            }
+
         }
         function removeReaction(id) {
             console.log("remove: " + id)
@@ -46,19 +43,17 @@ class ReactionController {
                     break;
                 }
             }
-            checkReagentInput();
         }
-        function downloadFile(){
-            $window.open(GET_OUTPUT_API+self.outputFile,'_blank');
+        function downloadFile() {
+            $window.open(GET_OUTPUT_API + self.outputFile, '_blank');
         }
         function sendRequest() {
-            
+
             var payload = new FormData();
             payload.append("file", $scope.file);
             var reaction = [];
             self.selectedReactionList.forEach(function (item) {
-                reaction.push({ reaction: item.id, reagent: item.input_reagent })
-
+                reaction.push({ reaction: item.id, reagent: item.input_reagent, loop: item.loop })
             });
             payload.append("reaction", JSON.stringify(reaction));
 
@@ -72,10 +67,19 @@ class ReactionController {
                 //prevents serializing payload.  don't do it.
                 transformRequest: angular.identity
             }).then(function (response) {
-                var data =  JSON.parse(response.data);
-                console.log(data)
-                self.outputFile = data.output;
-                self.outputReady = true;
+                console.log(response);
+                try {
+                    var data = response.data;
+                    console.log(data)
+                    self.outputFile = data.output;
+                    self.outputReady = true;
+                    if (typeof data.sample != 'undefined') {
+                        self.sampleResult = data.sample;
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+
             }, function (error) {
                 console.log(error)
             })
@@ -87,6 +91,7 @@ class ReactionController {
                     self.reactionList = response.data.reaction;
                     self.reactionList.forEach(function (element) {
                         element.display = element.name + " " + element.smart;
+                        element.loop = 1;
                     });
                     resolve()
                 });
@@ -95,19 +100,13 @@ class ReactionController {
         function querySearch(query) {
             //console.log(self.reactionList)
             if (typeof self.reactionList == 'undefined') {
-                console.log("come in here")
-
-
                 var deferred = $q.defer();
-                console.log("create differ");
                 loadAll().then((success) => {
                     var results = query ? self.reactionList.filter(createFilterFor(query)) : self.reactionList;
                     deferred.resolve(results)
                 })
                 return deferred.promise;
-
             } else {
-
                 var results = query ? self.reactionList.filter(createFilterFor(query)) : self.reactionList;
                 return results
 
@@ -136,7 +135,13 @@ class ReactionController {
 
                 return (state.name.includes(lowercaseQuery));
             };
-
+        }
+        function createLoopChoice(){
+            var choice = [];
+            for(var i = 1;i<=5;i++){
+                choice.push({display:i, value:i});
+            }
+            return choice;
         }
 
 
