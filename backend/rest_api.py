@@ -41,8 +41,9 @@ def getAllReaction():
             rxn_list.append(ReactionItem(rxn[0],rxn[1], rxn[2],rxn[3]))
     return rxn_list
 
-all_rxn_list = getAllReaction()
+
 def findReactionById(id):
+    all_rxn_list = getAllReaction()
     for rxn in all_rxn_list:
         if(rxn.id == int(id)):
             print("match" + str(rxn.id))
@@ -183,19 +184,29 @@ def download_file(filename):
     return send_from_directory(app.config['OUTPUT_FOLDER'],
                                filename, as_attachment=True)
 
-@app.route('/resource/reaction', methods=['GET','POST'])
-def get_reaction():
+@app.route('/resource/reaction', defaults={'rid': None}, methods=['GET','POST'] )
+@app.route('/resource/reaction/<rid>', methods=['GET','POST'])
+def get_reaction(rid):
     if request.method == 'GET':
+        all_rxn_list = getAllReaction()
         reaction_list = []
         for rxn in all_rxn_list:
-            reaction_list.append({"id":rxn.id,"name":rxn.name, "smart":rxn.smart, "description": rxn.description})
+            if(rid == None ):
+                reaction_list.append({"id":rxn.id,"name":rxn.name, "smart":rxn.smart, "description": rxn.description})
+            elif(int(rxn.id)==int(rid)):
+                reaction_list.append({"id":rxn.id,"name":rxn.name, "smart":rxn.smart, "description": rxn.description})
         return jsonify(reaction=reaction_list)
     else:
         reaction = json.loads(request.form['reaction'])
         name = reaction['name']
         smart = reaction['smart']
         description = reaction['description']
-        insert_db(name,smart,description)
+        with app.app_context():
+            if(rid == None ):
+                insert_db(name,smart,description)
+            else:
+                update_db(rid, name, smart, description)
+       
     return json.dumps({"result":"insert successfully"})
 
 if __name__ == "__main__":

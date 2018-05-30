@@ -1,4 +1,4 @@
-<section>
+<section style="background-color:white;">
   <div layout="row">
     <md-content class="md-padding" flex=70 style="background-color:white;">
       <form ng-submit="$event.preventDefault()">
@@ -11,7 +11,7 @@
           </md-item-template>
           <md-not-found>
             No states matching "{{vm.searchText}}" were found.
-            <a ng-click="vm.newState(vm.searchText)">Create a new one!</a>
+            <a ng-click="vm.addNewReaction($event)">Create a new one!</a>
           </md-not-found>
 
         </md-autocomplete>
@@ -21,8 +21,11 @@
       </form>
 
     </md-content>
-    <md-button id="execute" ng-click="vm.addNewReaction($event)" class="md-fab ">
+    <md-button id="add_button" ng-click="vm.addNewReaction($event)" class="md-fab ">
       <md-icon class="material-icons">add_circle</md-icon>
+    </md-button>
+    <md-button id="edit_button" ng-click="vm.editReaction($event)" class="md-fab">
+      <md-icon class="material-icons">edit</md-icon>
     </md-button>
   </div>
 
@@ -31,10 +34,17 @@
   <ul id="sortable">
 
     <li ng-repeat="item in vm.selectedReactionList track by $index" class="ui-state-default" layout-padding style="padding-bottom: 10px;">
-      <div layout="row">
-        <md-whiteframe class="md-whiteframe-2dp" flex-sm="60" flex-gt-sm="60" flex-gt-md="70" layout layout-align="left center">
-          <div style="padding-left:10px" flex=65>{{item.display}}</div>
-          <div layout layout-align="right right" flex=15>
+      <div layout="row" layout-xs="column">
+        <md-whiteframe class="md-whiteframe-2dp" layout-sm="column" layout-xs="column" flex-gt-xs="60" layout layout-align="left center">
+          <div flex=70 style="padding-left: 30px">
+            <div flex=70>
+              {{item.name}}
+            </div>
+            <textarea id="smart_display" disabled> {{item.smart}} </textarea>
+          </div>
+
+
+          <div layout layout-align="right right" flex="20">
             <md-input-container flex="70">
               <label>Loop</label>
               <md-select name="loop" ng-model="item.loop">
@@ -43,17 +53,17 @@
             </md-input-container>
           </div>
           <div>
-            <md-input-container>
+            <md-input-container flex layout-padding>
               <md-switch ng-model="item.hasReagent">Reagent</md-switch>
             </md-input-container>
           </div>
         </md-whiteframe>
-
-        <md-input-container ng-if="item.hasReagent" layout-padding flex=30>
-          <label>Reagent (smile input)</label>
-          <input ng-model="item.input_reagent">
-        </md-input-container>
-
+        <md-whiteframe class="md-whiteframe-2dp" ng-if="item.hasReagent" layout-padding>
+          <md-input-container>
+            <label>Reagent (smile input)</label>
+            <input ng-model="item.input_reagent">
+          </md-input-container>
+        </md-whiteframe>
 
 
         <md-button id="execute" ng-click="vm.removeReaction(item.id)" class="md-warn" layout ayout-align="right center">
@@ -79,16 +89,19 @@
       </div>
     </choose-file>
 
-
+    <md-button id="execute" ng-click="vm.sendRequest()" class="md-fab ">
+      <md-icon class="material-icons">play_circle_outline</md-icon>
+    </md-button>
 
   </div>
 
-  <md-button id="execute" ng-click="vm.sendRequest()" class="md-fab ">
-    <md-icon class="material-icons">play_circle_outline</md-icon>
-  </md-button>
-  <md-button ng-if="vm.outputReady" ng-click="vm.downloadFile()" class="md-fab ">
-    <md-icon class="material-icons">save_alt</md-icon>
-  </md-button>
+  <div>
+    <md-button ng-if="vm.outputReady" ng-click="vm.downloadFile()" class="md-fab ">
+      <md-icon class="material-icons">save_alt</md-icon>
+
+    </md-button>
+    <label>{{vm.outputFile}}</label>
+  </div>
 
   <md-input-container class="md-block" flex="50" style="padding-left:40px; ">
     <label style="padding-left:40px;">Sample Result</label>

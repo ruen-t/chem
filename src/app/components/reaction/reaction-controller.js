@@ -1,7 +1,8 @@
 var host = "http://35.198.250.233/"
 var RUN_REACTION_API = host + "upload"
-var GET_REACTION_API = host + "resource/reaction"
+var REACTION_API = host + "resource/reaction"
 var GET_OUTPUT_API = host + 'download/'
+
 class ReactionController {
     constructor($scope, $log, $http, $q, $timeout, $window, $mdDialog) {
         console.log("ReactionController")
@@ -21,18 +22,25 @@ class ReactionController {
         self.newState = newState;
         self.addReaction = addReaction;
         self.addNewReaction = addNewReaction;
+        self.editReaction = editReaction;
         self.removeReaction = removeReaction;
         self.currentSearchedReaction = null;
         self.downloadFile = downloadFile;
         self.outputReady = false;
+
         $("#sortable").sortable();
         $("#sortable").disableSelection();
 
-
+        function editReaction(ev) {
+            showDialog(ev, "EditReactionDialogController", 'app/components/reaction/dialog/edit-reaction-dialog.html')
+        }
         function addNewReaction(ev) {
+            showDialog(ev, "DialogController", 'app/components/reaction/dialog/new-reaction-dialog.html')
+        }
+        function showDialog(ev, controller, html){
             $mdDialog.show({
-                controller: DialogController,
-                templateUrl: 'app/components/reaction/dialog/new-reaction-dialog.html',
+                controller: controller + " as vm",
+                templateUrl: html,
                 parent: angular.element(document.body),
                 targetEvent: ev,
                 clickOutsideToClose: true,
@@ -98,7 +106,7 @@ class ReactionController {
         }
         function loadAll() {
             return new Promise(function (resolve, reject) {
-                $http.get(GET_REACTION_API).then(function (response) {
+                $http.get(REACTION_API).then(function (response) {
                     self.reactionList = response.data.reaction;
                     self.reactionList.forEach(function (element) {
                         element.display = element.name + " " + element.smart;
