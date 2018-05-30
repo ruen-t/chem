@@ -32,8 +32,7 @@ function EditReactionDialogController($scope, $mdDialog, $http, $log) {
                 confirmButtonText: 'Confirm',
                 showLoaderOnConfirm: true,
                 preConfirm: (value) => {
-                    console.log(value)
-                    
+                    console.log(value) 
                 },
                 allowOutsideClick: false
             }).then((result) => {

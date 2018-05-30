@@ -2,7 +2,7 @@ var host = "http://35.198.250.233/"
 var RUN_REACTION_API = host + "upload"
 var REACTION_API = host + "resource/reaction"
 var GET_OUTPUT_API = host + 'download/'
-
+var CHECK_SMART_API = host + 'tools/smart/'
 class ReactionController {
     constructor($scope, $log, $http, $q, $timeout, $window, $mdDialog) {
         console.log("ReactionController")
@@ -18,8 +18,8 @@ class ReactionController {
         self.querySearch = querySearch;
         self.selectedItemChange = selectedItemChange;
         self.searchTextChange = searchTextChange;
-        self.sendRequest = sendRequest;
         self.newState = newState;
+        self.sendRequest = sendRequest;
         self.addReaction = addReaction;
         self.addNewReaction = addNewReaction;
         self.editReaction = editReaction;
@@ -146,8 +146,6 @@ class ReactionController {
                 //self.searchText = "";
                 $log.info('Item changed to ' + JSON.stringify(item));
             }
-
-
         }
         function newState(state) {
             alert("Sorry! You'll need to create a Constitution for " + state + " first!");

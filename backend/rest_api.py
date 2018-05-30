@@ -213,6 +213,12 @@ def get_reaction(rid):
             delete_db(rid)
         return json.dumps({"result":"delete successfully"})
     return json.dumps({"result":"please check http method"})
-
+@app.route('/tools/smart/<smart>')
+def check_smart(smart):
+    try:
+        rxn =  AllChem.ReactionFromSmarts(str(smart))
+        return json.dumps({"result":True})
+    except Exception:
+        return json.dumps({"result":False})
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0') 

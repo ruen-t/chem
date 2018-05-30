@@ -1,24 +1,28 @@
-<md-dialog>
-    <form>
+<md-dialog id="new-reaction-dialog">
+    <form layout-margin layout-padding>
         <title>New Reaction</title>
         <md-input-container>
             <label>Name</label>
-            <input ng-model="name">
+            <input ng-model="vm.name">
         </md-input-container>
         <md-input-container>
             <label>Smarts</label>
-            <input ng-model="smart">
+            <input ng-model="vm.smarts">
+            <div ng-if="!vm.isCorrectSmart">
+                <span style="color: red">Incorrect smarts format</span>
+            </div>
+
         </md-input-container>
         <md-input-container>
-                <label>Description</label>
-                <input ng-model="description">
-            </md-input-container>
+            <label>Description</label>
+            <input ng-model="vm.description">
+        </md-input-container>
         <md-dialog-actions layout="row">
 
             <md-button ng-click="cancel('not useful')">
                 Cancel
             </md-button>
-            <md-button ng-click="create()">
+            <md-button ng-click="vm.create()">
                 Create
             </md-button>
         </md-dialog-actions>
