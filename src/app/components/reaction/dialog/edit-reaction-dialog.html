@@ -11,7 +11,7 @@
                           <span md-highlight-text="vm.searchText" md-highlight-flags="gi">{{item.display}}</span>
                         </md-item-template>
                       </md-autocomplete>
-              
+                      <span ng-if="vm.showError" style="color: red;">**please select reaction**</span>
                       <br/>
               
                     </form>
@@ -22,7 +22,7 @@
                 <input ng-model="vm.name">
             </md-input-container>
             <md-input-container>
-                <label>Smart</label>
+                <label>Smarts</label>
                 <input ng-model="vm.smart">
             </md-input-container>
             <md-input-container>
@@ -30,13 +30,16 @@
                     <input ng-model="vm.description">
                 </md-input-container>
             <md-dialog-actions layout="row">
-    
+                <md-button ng-click="delete()">
+                    <span style="color: red">Delete</span>
+                </md-button>
                 <md-button ng-click="cancel('not useful')">
                     Cancel
                 </md-button>
-                <md-button ng-click="create()">
-                    Update
+                <md-button ng-click="update()">
+                    <span style="color: green">Update</span>
                 </md-button>
+                
             </md-dialog-actions>
         </form>
     

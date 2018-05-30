@@ -26,7 +26,10 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}}, headers='Content-Type')
 
 class ReactionItem:
     def __init__(self, id, name, rxn_smart, description):
-        self.rxn =  AllChem.ReactionFromSmarts(str(rxn_smart))
+        try:
+            self.rxn =  AllChem.ReactionFromSmarts(str(rxn_smart))
+        except Exception:
+            self.rxn = None
         self.smart = rxn_smart
         self.id = id
         self.name = name
@@ -54,9 +57,6 @@ class StackItem:
     def __init__(self, mol,num_reaction):
         self.mol = mol
         self.num_reaction = num_reaction
-
-
-# In[131]:
 
 def runReaction(rxn, mol_reactant, reagent=None):
     products = []
@@ -185,7 +185,7 @@ def download_file(filename):
                                filename, as_attachment=True)
 
 @app.route('/resource/reaction', defaults={'rid': None}, methods=['GET','POST'] )
-@app.route('/resource/reaction/<rid>', methods=['GET','POST'])
+@app.route('/resource/reaction/<rid>', methods=['GET','POST', 'DELETE'])
 def get_reaction(rid):
     if request.method == 'GET':
         all_rxn_list = getAllReaction()
@@ -196,7 +196,7 @@ def get_reaction(rid):
             elif(int(rxn.id)==int(rid)):
                 reaction_list.append({"id":rxn.id,"name":rxn.name, "smart":rxn.smart, "description": rxn.description})
         return jsonify(reaction=reaction_list)
-    else:
+    elif request.method == 'POST':
         reaction = json.loads(request.form['reaction'])
         name = reaction['name']
         smart = reaction['smart']
@@ -206,8 +206,13 @@ def get_reaction(rid):
                 insert_db(name,smart,description)
             else:
                 update_db(rid, name, smart, description)
-       
-    return json.dumps({"result":"insert successfully"})
+        return json.dumps({"result":"insert successfully"})
+    elif request.method == 'DELETE':
+        print('delete ' + str(rid))
+        with app.app_context():
+            delete_db(rid)
+        return json.dumps({"result":"delete successfully"})
+    return json.dumps({"result":"please check http method"})
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0') 

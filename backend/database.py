@@ -27,7 +27,7 @@ def update_db(key, name, smart, description):
 def delete_db(key):
     db = get_db()
     cur = db.cursor()
-    cur.execute("DELETE FROM Reaction WHERE id=?",(str(key)))
+    cur.execute("DELETE FROM Reaction WHERE id=?",[key])
     db.commit()
     cur.close()
 def get_all_reaction():
