@@ -1,47 +1,62 @@
 <!doctype html>
 <html>
-  <head>
-    <base href="/">
-    <meta charset="utf-8">
-    <title>Analysis Tools</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  
-    <!-- build:css({.tmp,src}) styles/vendor.css -->
-    <!-- bower:css -->
-    <!-- run `gulp inject` to automatically populate bower styles dependencies -->
-    <!-- endbower -->
-    <!-- endbuild -->
 
-    <!-- build:css({.tmp,src}) styles/app.css -->
-    <!-- inject:css -->
-    <!-- css files will be automatically insert here -->
-    <!-- endinject -->
-    <!-- endbuild -->
-  </head>
+<head>
+  <base href="/">
+  <meta charset="utf-8">
+  <title>Analysis Tools</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-
-  <body ng-app="app" style="background-color:white;">
-  
-      <ui-view></ui-view>
-  </body>
- 
-  <!-- build:js({.tmp,src}) scripts/vendor.js -->
-  <!-- bower:js -->
-  <!-- run `gulp inject` to automatically populate bower script dependencies -->
+  <!-- build:css({.tmp,src}) styles/vendor.css -->
+  <!-- bower:css -->
+  <!-- run `gulp inject` to automatically populate bower styles dependencies -->
   <!-- endbower -->
   <!-- endbuild -->
 
-  <!-- build:js({.tmp,src}) scripts/app.js -->
-  <!-- inject:js -->
-  <!-- js files will be automatically insert here -->
-  <!-- endinject -->
-  <!-- inject:partials -->
-  <!-- angular templates will be automatically converted in js and inserted here -->
+  <!-- build:css({.tmp,src}) styles/app.css -->
+  <!-- inject:css -->
+  <!-- css files will be automatically insert here -->
   <!-- endinject -->
   <!-- endbuild -->
-  
- 
-</html>
+</head>
 
+
+<body ng-app="app" style="background-color:white;">
+  <div ng-controller="IndexController as vm" ng-cloak>
+    <md-nav-bar md-selected-nav-item="currentNavItem" nav-bar-aria-label="navigation links">
+      <md-nav-item md-nav-click="vm.goto('reaction')" name="home">
+        HOME
+      </md-nav-item>
+      <md-nav-item md-nav-click="vm.goto('test')" name="about">
+        ABOUT
+      </md-nav-item>
+      <md-nav-item md-nav-click="goto('app')" name="download">
+        DOWNLOAD
+      </md-nav-item>
+      <md-nav-item md-nav-click="goto('page4')" name="contact">
+        CONTACT
+      </md-nav-item>
+    </md-nav-bar>
+  </div>
+  <ui-view></ui-view>
+</body>
+
+<!-- build:js({.tmp,src}) scripts/vendor.js -->
+<!-- bower:js -->
+<!-- run `gulp inject` to automatically populate bower script dependencies -->
+<!-- endbower -->
+<!-- endbuild -->
+
+<!-- build:js({.tmp,src}) scripts/app.js -->
+<!-- inject:js -->
+<!-- js files will be automatically insert here -->
+<!-- endinject -->
+<!-- inject:partials -->
+<!-- angular templates will be automatically converted in js and inserted here -->
+<!-- endinject -->
+<!-- endbuild -->
+
+
+</html>

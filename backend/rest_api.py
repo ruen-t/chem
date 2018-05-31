@@ -3,10 +3,7 @@
 import sqlite3
 from flask import Flask, request, redirect, url_for, send_from_directory, jsonify,g
 from flask_restful import Resource, Api
-from rdkit.Chem.SaltRemover import SaltRemover
 from rdkit import Chem
-from rdkit.Chem import AllChem
-from pythonds.basic.stack import Stack
 import os
 import json
 import datetime
@@ -14,6 +11,7 @@ import time
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 from database import *
+from ChemProcess import *
 UPLOAD_FOLDER = '/home/tanapat_ruengsatra/htdocs/input'
 OUTPUT_FOLDER = '/home/tanapat_ruengsatra/htdocs/output'
 ALLOWED_EXTENSIONS = set(['smi', 'pbd', 'sdf'])
@@ -55,75 +53,9 @@ def findReactionById(id):
             return rxn
     return None
 
-class StackItem:
-    def __init__(self, mol,num_reaction):
-        self.mol = mol
-        self.num_reaction = num_reaction
-
-def runReaction(rxn, mol_reactant, reagent=None):
-    products = []
-    try:
-        if reagent!=None:
-            result = rxn.RunReactants((mol_reactant,reagent))
-        else:
-            result = rxn.RunReactants((mol_reactant,))
-        try: 
-            if result[0]:
-                for product in result[0]:
-                    products.append(product)       
-        except IndexError:
-            products.append(mol_reactant)
-    except Exception:
-        products.append(mol_reactant)
-    return products
-
-
-def loopReaction(rxn, mol_ractant,reagent = None, loop_num = 1):
-    reactant_stack = Stack()
-    all_products = []
-    item = StackItem(mol = mol_ractant, num_reaction = 0)
-    reactant_stack.push(item)
-    while not reactant_stack.isEmpty():
-        reactant = reactant_stack.pop()
-        mol = reactant.mol
-        num_reaction = reactant.num_reaction
-        if(num_reaction == loop_num):
-            all_products.append(mol)
-        else:
-            products = runReaction(rxn, mol,reagent)
-            num_reaction = num_reaction+1
-            for p in products:
-                new_item = StackItem(mol = p, num_reaction = num_reaction)
-                reactant_stack.push(new_item)
-    return all_products
-
-
-
-def runReactionList(rxn, mol_list,reagent = None, loop_num = 1):
-    all_products = []
-    for index, mol in enumerate(mol_list):
-        products = loopReaction(rxn, mol, reagent, loop_num)
-        for p in products:
-            all_products.append(p)
-    return all_products
-def make3D(mol_list, filename):
-    remover = SaltRemover()
-    outf = Chem.SDWriter(app.config['OUTPUT_FOLDER']+'/' + filename)
-    for mol_index, mol in enumerate(mol_list):
-        try:
-            try:
-                non_salt = remover(mol)
-            except :
-                non_salt = mol
-            mol_hs = Chem.AddHs(non_salt)
-            AllChem.EmbedMolecule(mol_hs, useRandomCoords=True)
-            AllChem.MMFFOptimizeMolecule(mol_hs)
-            outf.write(mol_hs)
-        except:
-            print('ERROR :'+ str(mol_index))
 def readFile(filename):
     print('reading file')
-    suppl = Chem.SmilesMolSupplier(filename,delimiter='\t',titleLine=False)
+    suppl = Chem.SmilesMolSupplier(filename, delimiter='\t',titleLine=False)
     mol_list = []
     for mol in suppl:
         mol_list.append(mol)
@@ -152,15 +84,17 @@ def executeFile(filename, input_rxn_list, option_list = []):
     if len(option_list)>0:
         for option in option_list:
             if option['id'] == OPTIONS['3d']:
-                sdf_file = 'output'+st+'.sdf'
+                sdf_file ='output'+st+'.sdf'
+                full_path_sdf_file = app.config['OUTPUT_FOLDER']+'/'+sdf_file
                 print('3D output: '+sdf_file)
                 result = sdf_file
                 created_output = True
+                make3D(mol_list, full_path_sdf_file)
                 for index, mol in enumerate(mol_list):
                     smile = Chem.MolToSmiles(mol)
                     if (index < 50):
-                        sample += "%s compound%d\n"  %(smile, (index+1))
-                make3D(mol_list, sdf_file)
+                        sample += "%s\tcompound%d\n"  %(smile, (index+1))
+                
                
     if(not created_output):
         w = open(app.config['OUTPUT_FOLDER']+'/'+output_file,"w+")
@@ -168,9 +102,9 @@ def executeFile(filename, input_rxn_list, option_list = []):
         result = output_file
         for index, mol in enumerate(mol_list):
             smile = Chem.MolToSmiles(mol)
-            w.write("%s compound%d\n"  %(smile, (index+1)))
+            w.write("%s\tcompound%d\n"  %(smile, (index+1)))
             if (index < 50):
-                sample += "%s compound%d\n"  %(smile, (index+1))
+                sample += "%s\tcompound%d\n"  %(smile, (index+1))
             #print(str(smile) + " compound " + str(index+1))
     return result, sample
 
