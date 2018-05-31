@@ -3,6 +3,7 @@
 import sqlite3
 from flask import Flask, request, redirect, url_for, send_from_directory, jsonify,g
 from flask_restful import Resource, Api
+from rdkit.Chem.SaltRemover import SaltRemover
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from pythonds.basic.stack import Stack
@@ -104,7 +105,21 @@ def runReactionList(rxn, mol_list,reagent = None, loop_num = 1):
         for p in products:
             all_products.append(p)
     return all_products
-
+def make3D(mol_list, filename):
+    remover = SaltRemover()
+    outf = Chem.SDWriter(app.config['OUTPUT_FOLDER']+'/' + filename)
+    for mol_index, mol in enumerate(mol_list):
+        try:
+            try: 
+                non_salt = remover(mol)
+            except Exception:
+                pass
+            mol_hs= Chem.AddHs(non_salt)
+            AllChem.EmbedMolecule(mol_hs, useRandomCoords=True)
+            AllChem.MMFFOptimizeMolecule(mol_hs)
+            outf.write(mol_hs)
+        except:
+            print('ERROR :'+ str(mol_index))
 def readFile(filename):
     print('reading file')
     suppl = Chem.SmilesMolSupplier(filename,delimiter='\t',titleLine=False)
@@ -118,9 +133,9 @@ def executeFile(filename, input_rxn_list):
     mol_list = readFile(filename)
     for rxn in input_rxn_list:
         rxn_id = int(rxn['reaction'])
-        if hasattr(rxn, 'reagent') and rxn['reagent'] != None:
-            print(rxn['reagent'])
-            reagent = Chem.MolFromSmiles(rxn['reagent'])
+        if rxn.has_key('reagent'):
+            print(str(rxn['reagent']))
+            reagent = Chem.MolFromSmiles(str(rxn['reagent']))
         else:
             reagent = None
         rxnItem = findReactionById(rxn_id)
@@ -131,6 +146,7 @@ def executeFile(filename, input_rxn_list):
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
     output_file = 'output'+st+'.smi'
+    sdf_file = 'output'+st+'.sdf'
     w= open(app.config['OUTPUT_FOLDER']+'/'+output_file,"w+")
     #w = Chem.SmilesWriter(app.config['OUTPUT_FOLDER']+'/'+output_file)
     result = output_file

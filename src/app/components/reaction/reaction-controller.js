@@ -11,7 +11,6 @@ class ReactionController {
         self.isDisabled = false;
         self.reagentRequired = false;
         self.selectedReactionList = [];
-        self.preview = [1, 2, 3, 4, 5, 6]
         self.loopChoice = createLoopChoice();
         // list of `state` value/display objects
         self.states = loadAll();
@@ -62,6 +61,7 @@ class ReactionController {
                     break;
                 }
             }
+            console.log(self.selectedReactionList)
         }
         function downloadFile() {
             $window.open(GET_OUTPUT_API + self.outputFile, '_blank');
@@ -74,8 +74,9 @@ class ReactionController {
             self.selectedReactionList.forEach(function (item) {
                 reaction.push({ reaction: item.id, reagent: item.input_reagent, loop: item.loop })
             });
+            console.log(reaction)
             payload.append("reaction", JSON.stringify(reaction));
-
+            
             $http({
                 url: RUN_REACTION_API,
                 method: 'POST',

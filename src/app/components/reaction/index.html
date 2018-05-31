@@ -31,7 +31,7 @@
 
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <ul id="sortable">
+  <ul ui-sortable ng-model="vm.selectedReactionList">
 
     <li ng-repeat="item in vm.selectedReactionList track by $index" class="ui-state-default" layout-padding style="padding-bottom: 10px;">
       <div layout="row" layout-xs="column">
@@ -66,7 +66,7 @@
         </md-whiteframe>
 
 
-        <md-button id="execute" ng-click="vm.removeReaction(item.id)" class="md-warn" layout ayout-align="right center">
+        <md-button id="remove" ng-click="vm.removeReaction(item.id)" class="md-warn" layout ayout-align="right center">
           <md-icon class="material-icons">clear</md-icon>
         </md-button>
       </div>
