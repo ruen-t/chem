@@ -16,7 +16,8 @@ from flask_cors import CORS
 from database import *
 UPLOAD_FOLDER = '/home/tanapat_ruengsatra/htdocs/input'
 OUTPUT_FOLDER = '/home/tanapat_ruengsatra/htdocs/output'
-ALLOWED_EXTENSIONS = set(['smi', 'pbd', 'jpg'])
+ALLOWED_EXTENSIONS = set(['smi', 'pbd', 'sdf'])
+OPTIONS = {'3d':0, '4d':1}
 
 
 app = Flask(__name__)
@@ -110,11 +111,11 @@ def make3D(mol_list, filename):
     outf = Chem.SDWriter(app.config['OUTPUT_FOLDER']+'/' + filename)
     for mol_index, mol in enumerate(mol_list):
         try:
-            try: 
+            try:
                 non_salt = remover(mol)
-            except Exception:
-                pass
-            mol_hs= Chem.AddHs(non_salt)
+            except :
+                non_salt = mol
+            mol_hs = Chem.AddHs(non_salt)
             AllChem.EmbedMolecule(mol_hs, useRandomCoords=True)
             AllChem.MMFFOptimizeMolecule(mol_hs)
             outf.write(mol_hs)
@@ -128,11 +129,11 @@ def readFile(filename):
         mol_list.append(mol)
     print('Num of mol: '+ str(len(mol_list)))
     return mol_list
-        
-def executeFile(filename, input_rxn_list):
+       
+def executeFile(filename, input_rxn_list, option_list = []):
     mol_list = readFile(filename)
     for rxn in input_rxn_list:
-        rxn_id = int(rxn['reaction'])
+        rxn_id = int(rxn['id'])
         if rxn.has_key('reagent'):
             print(str(rxn['reagent']))
             reagent = Chem.MolFromSmiles(str(rxn['reagent']))
@@ -146,17 +147,31 @@ def executeFile(filename, input_rxn_list):
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
     output_file = 'output'+st+'.smi'
-    sdf_file = 'output'+st+'.sdf'
-    w= open(app.config['OUTPUT_FOLDER']+'/'+output_file,"w+")
-    #w = Chem.SmilesWriter(app.config['OUTPUT_FOLDER']+'/'+output_file)
-    result = output_file
+    created_output = False
     sample = ''
-    for index, mol in enumerate(mol_list):
-        smile = Chem.MolToSmiles(mol)
-        w.write("%s compound%d\n"  %(smile, (index+1)))
-        if (index < 50):
-            sample += "%s compound%d\n"  %(smile, (index+1))
-        #print(str(smile) + " compound " + str(index+1))
+    if len(option_list)>0:
+        for option in option_list:
+            if option['id'] == OPTIONS['3d']:
+                sdf_file = 'output'+st+'.sdf'
+                print('3D output: '+sdf_file)
+                result = sdf_file
+                created_output = True
+                for index, mol in enumerate(mol_list):
+                    smile = Chem.MolToSmiles(mol)
+                    if (index < 50):
+                        sample += "%s compound%d\n"  %(smile, (index+1))
+                make3D(mol_list, sdf_file)
+               
+    if(not created_output):
+        w = open(app.config['OUTPUT_FOLDER']+'/'+output_file,"w+")
+        #w = Chem.SmilesWriter(app.config['OUTPUT_FOLDER']+'/'+output_file)
+        result = output_file
+        for index, mol in enumerate(mol_list):
+            smile = Chem.MolToSmiles(mol)
+            w.write("%s compound%d\n"  %(smile, (index+1)))
+            if (index < 50):
+                sample += "%s compound%d\n"  %(smile, (index+1))
+            #print(str(smile) + " compound " + str(index+1))
     return result, sample
 
 @app.teardown_appcontext
@@ -184,6 +199,8 @@ def upload_file():
             return str({'status':'error'})  
         file = request.files['file']
         reaction = json.loads(request.form['reaction'])
+        options = json.loads(request.form['options'])
+        print(options)
         if file.filename == '':
             return json.dumps({'status':'no file'})
           
@@ -191,7 +208,7 @@ def upload_file():
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
-            result, sample = executeFile(file_path, reaction)
+            result, sample = executeFile(file_path, reaction, option_list=options)
             return json.dumps({"output":result, "sample": sample})
 
 

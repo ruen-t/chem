@@ -3,6 +3,8 @@ var RUN_REACTION_API = host + "upload"
 var REACTION_API = host + "resource/reaction"
 var GET_OUTPUT_API = host + 'download/'
 var CHECK_SMART_API = host + 'tools/smart/'
+var TYPE_REACTION = 0;
+var TYPE_OPTION = 1;
 class ReactionController {
     constructor($scope, $log, $http, $q, $timeout, $window, $mdDialog) {
         console.log("ReactionController")
@@ -11,6 +13,7 @@ class ReactionController {
         self.isDisabled = false;
         self.reagentRequired = false;
         self.selectedReactionList = [];
+        self.selectedOptionList = [];
         self.loopChoice = createLoopChoice();
         // list of `state` value/display objects
         self.states = loadAll();
@@ -23,7 +26,7 @@ class ReactionController {
         self.addNewReaction = addNewReaction;
         self.editReaction = editReaction;
         self.removeReaction = removeReaction;
-        self.currentSearchedReaction = null;
+        self.removeOption = removeOption;
         self.downloadFile = downloadFile;
         self.outputReady = false;
 
@@ -36,7 +39,7 @@ class ReactionController {
         function addNewReaction(ev) {
             showDialog(ev, "DialogController", 'app/components/reaction/dialog/new-reaction-dialog.html')
         }
-        function showDialog(ev, controller, html){
+        function showDialog(ev, controller, html) {
             $mdDialog.show({
                 controller: controller + " as vm",
                 templateUrl: html,
@@ -46,12 +49,15 @@ class ReactionController {
                 fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
             })
         }
-        function addReaction() {
-            if (self.currentSearchedReaction != null) {
-                self.selectedReactionList.push(self.currentSearchedReaction);
-                self.currentSearchedReaction = null;
+        function addReaction(reaction) {
+            if (reaction != null) {
+                self.selectedReactionList.push(reaction);
             }
-
+        }
+        function addOption(option) {
+            if (option != null) {
+                self.selectedOptionList.push(option);
+            }
         }
         function removeReaction(id) {
             console.log("remove: " + id)
@@ -61,7 +67,14 @@ class ReactionController {
                     break;
                 }
             }
-            console.log(self.selectedReactionList)
+        }
+        function removeOption(id) {
+            for (var i = 0; i < self.selectedOptionList.length; i++) {
+                if (self.selectedOptionList[i].id == id) {
+                    self.selectedOptionList.splice(i, 1);
+                    break;
+                }
+            }
         }
         function downloadFile() {
             $window.open(GET_OUTPUT_API + self.outputFile, '_blank');
@@ -71,12 +84,16 @@ class ReactionController {
             var payload = new FormData();
             payload.append("file", $scope.file);
             var reaction = [];
+            var options = [];
             self.selectedReactionList.forEach(function (item) {
-                reaction.push({ reaction: item.id, reagent: item.input_reagent, loop: item.loop })
+                reaction.push({ id: item.id, reagent: item.input_reagent, loop: item.loop })
             });
-            console.log(reaction)
+            self.selectedOptionList.forEach(function(item){
+                options.push({id:item.id, code:0}); //code is for telling sub option 
+            });
             payload.append("reaction", JSON.stringify(reaction));
-            
+            payload.append("options", JSON.stringify(options));
+
             $http({
                 url: RUN_REACTION_API,
                 method: 'POST',
@@ -112,7 +129,10 @@ class ReactionController {
                     self.reactionList.forEach(function (element) {
                         element.display = element.name + " " + element.smart;
                         element.loop = 1;
+                        element.type = TYPE_REACTION;
                     });
+                    self.reactionList.push({ id: 0, display: "3D Maker", type: TYPE_OPTION, description:"", warn:"This option will take time to process"})
+
                     resolve()
                 });
             })
@@ -129,10 +149,7 @@ class ReactionController {
             } else {
                 var results = query ? self.reactionList.filter(createFilterFor(query)) : self.reactionList;
                 return results
-
             }
-
-
 
         }
         function searchTextChange(text) {
@@ -141,10 +158,14 @@ class ReactionController {
 
         function selectedItemChange(item) {
             if (item != null) {
-                self.currentSearchedReaction = item;
-                addReaction();
-                //self.selectedItem = null;
-                //self.searchText = "";
+                switch (item.type) {
+                    case TYPE_REACTION:
+                        addReaction(item);
+                        break;
+                    case TYPE_OPTION:
+                        addOption(item);
+                        break;
+                }
                 $log.info('Item changed to ' + JSON.stringify(item));
             }
         }
@@ -156,8 +177,7 @@ class ReactionController {
             var lowercaseQuery = query.toLowerCase();
 
             return function filterFn(state) {
-
-                return (state.name.includes(lowercaseQuery));
+                return (state.display.toLowerCase().includes(lowercaseQuery));
             };
         }
         function createLoopChoice() {

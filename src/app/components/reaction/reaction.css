@@ -1,4 +1,4 @@
-ul {
+ul#reaction_list{
     list-style-type: decimal;
   }
 #edit_button{

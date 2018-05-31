@@ -1,4 +1,4 @@
-<section style="background-color:white;">
+<section>
   <div layout="row">
     <md-content class="md-padding" flex=70 style="background-color:white;">
       <form ng-submit="$event.preventDefault()">
@@ -29,9 +29,9 @@
     </md-button>
   </div>
 
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <ul ui-sortable ng-model="vm.selectedReactionList">
+
+  <ul id="reaction_list" ui-sortable ng-model="vm.selectedReactionList">
 
     <li ng-repeat="item in vm.selectedReactionList track by $index" class="ui-state-default" layout-padding style="padding-bottom: 10px;">
       <div layout="row" layout-xs="column">
@@ -74,8 +74,26 @@
     </li>
 
   </ul>
-  <div layout-margin layout-padding layout="row">
+  <ul>
+    <li class="ui-state-default" ng-repeat="item in vm.selectedOptionList" layout-padding style="padding-bottom: 10px;">
+      <div layout="row" layout-xs="column">
+        <md-whiteframe class="md-whiteframe-2dp" layout-sm="column" layout-xs="column" flex-gt-xs="60" layout layout-align="left center">
+          <div style="padding-left: 30px">
+            <div>
+              {{item.display}}
+              <span style="color:red; font-size: 0.7em">{{item.warn}}</span>
+            </div>
+          </div>
+        </md-whiteframe>
+        <md-button id="remove" ng-click="vm.removeOption(item.id)" class="md-warn" layout ayout-align="right center">
+          <md-icon class="material-icons">clear</md-icon>
+        </md-button>
+      </div>
 
+    </li>
+  </ul>
+
+  <div layout-margin layout-padding layout="row">
     <choose-file layout="row" flex="40">
       <input id="fileInput" type="file" class="ng-hide">
       <md-input-container flex class="md-block">
@@ -92,8 +110,8 @@
     <md-button id="execute" ng-click="vm.sendRequest()" class="md-fab ">
       <md-icon class="material-icons">play_circle_outline</md-icon>
     </md-button>
-
   </div>
+
 
   <div>
     <md-button ng-if="vm.outputReady" ng-click="vm.downloadFile()" class="md-fab ">
