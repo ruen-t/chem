@@ -29,7 +29,9 @@ class ReactionController {
         self.removeOption = removeOption;
         self.downloadFile = downloadFile;
         self.outputReady = false;
-
+        self.onDropFile = onDropFile;
+        self.getCurrentWorkFlow = getCurrentWorkFlow;
+        self.showDropZone = showDropZone;
         $("#sortable").sortable();
         $("#sortable").disableSelection();
 
@@ -48,6 +50,9 @@ class ReactionController {
                 clickOutsideToClose: true,
                 fullscreen: $scope.customFullscreen // Only for -xs, -sm breakpoints.
             })
+        }
+        function showDropZone(){
+            return !(self.selectedOptionList.length >0 || self.selectedReactionList.length>0)
         }
         function addReaction(reaction) {
             if (reaction != null) {
@@ -78,6 +83,37 @@ class ReactionController {
         }
         function downloadFile() {
             $window.open(GET_OUTPUT_API + self.outputFile, '_blank');
+        }
+      
+        function getCurrentWorkFlow() {
+
+            var reaction = [];
+            var options = [];
+            self.selectedReactionList.forEach(function (item) {
+                reaction.push({ id: item.id, reagent: item.input_reagent, loop: item.loop })
+            });
+            self.selectedOptionList.forEach(function (item) {
+                options.push({ id: item.id, code: 0 }); //code is for telling sub option 
+            });
+            var workFlow = { reaction, options };
+            var json = JSON.stringify(workFlow);
+            var properties = { type: 'application/json' };
+            var file;
+            var data = [];
+            data.push(json)
+            var filename = "structure.json";
+            try {
+                file = new File(data, filename, properties);
+            } catch (e) {
+                file = new Blob(data, properties);
+            }
+            var url = window.URL.createObjectURL(file);
+            var a = document.getElementById("config")
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            return JSON.stringify(workFlow);
         }
         function sendRequest() {
 
@@ -187,6 +223,29 @@ class ReactionController {
             }
             return choice;
         }
+        function findReaction(id){
+            self.reactionList.forEach(function(item){
+                if(item.id==id){
+                    console.log("return item")
+                    return item;
+                }
+            });
+        }
+        function onDropFile(data) {
+            var object = JSON.parse(data);
+            var reaction = object.reaction;
+            console.log(reaction)
+            reaction.forEach(function (item) {
+            
+               var rxn =  findReaction(item.id);
+               console.log(item);
+               //rxn.loop = item.loop;
+               self.addReaction(rxn);
+            });
+            var option = object.option;
+            
+            console.log(object)
+        }
 
 
     }
@@ -223,3 +282,5 @@ angular
             }
         };
     })
+
+

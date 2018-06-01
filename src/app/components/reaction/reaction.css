@@ -13,3 +13,12 @@ ul#reaction_list{
 #new-reaction-dialog{
   width: 400px;
 }
+div[dropzone] {
+  border: 2px dashed #bbb;
+  border-radius: 5px;
+  padding: 25px;
+  text-align: center;
+  font: 20pt bold;
+  color: #bbb;
+  margin-bottom: 20px;
+}

@@ -30,7 +30,7 @@
   </div>
 
 
-
+  <div ng-if="vm.showDropZone()" dropzone>Drop Files Here</div>
   <ul id="reaction_list" ui-sortable ng-model="vm.selectedReactionList">
 
     <li ng-repeat="item in vm.selectedReactionList track by $index" class="ui-state-default" layout-padding style="padding-bottom: 10px;">
@@ -92,7 +92,7 @@
       </div>
     </li>
   </ul>
-
+  
   <div layout-margin layout-padding layout="row">
     <choose-file layout="row" flex="40">
       <input id="fileInput" type="file" class="ng-hide">
@@ -106,7 +106,11 @@
         </md-button>
       </div>
     </choose-file>
-
+   
+    <md-button id="workflow" ng-click="vm.getCurrentWorkFlow()" class="md-fab ">
+        <a id="config" style="display: none"></a>
+        <md-icon  class="material-icons" >save_alt</md-icon>
+      </md-button>
     <md-button id="execute" ng-click="vm.sendRequest()" class="md-fab ">
       <md-icon class="material-icons">play_circle_outline</md-icon>
     </md-button>
