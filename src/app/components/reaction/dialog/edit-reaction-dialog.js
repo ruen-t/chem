@@ -62,7 +62,7 @@ function EditReactionDialogController($scope, $mdDialog, $http, $log) {
     };
 
     $scope.update = function () {
-        if (id < 0) {
+        if (self.id < 0) {
             self.showError = false;
         } else {
             $mdDialog.hide();

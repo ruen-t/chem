@@ -61,7 +61,45 @@ def readFile(filename):
         mol_list.append(mol)
     print('Num of mol: '+ str(len(mol_list)))
     return mol_list
-       
+
+def make3DFromFile(filename, outputFileName):
+    mol_list = readFile(filename)
+    make3D(mol_list, outputFileName)
+
+def make3DAfterReaction(mol_list, filename):
+    smile_list = makeSmileList(mol_list)
+    new_mol_list = []
+    for smile in smile_list:
+        new_mol_list.append(Chem.MolFromSmiles(smile))
+    make3D(new_mol_list, filename)
+
+def makeSmileList(mol_list):
+    smile_list = []
+    for index, mol in enumerate(mol_list):
+        smile = Chem.MolToSmiles(mol)
+        smile_list.append(smile)
+    return smile_list
+
+def writeMolToSmileFile(mol_list, filename):
+    sample = ''
+    w = open(app.config['OUTPUT_FOLDER']+'/'+filename,"w+")
+    for index, mol in enumerate(mol_list):
+        smile = Chem.MolToSmiles(mol)
+        w.write("%s\tcompound%d\n"  %(smile, (index+1)))
+        if (index < 50):
+            sample += "%s\tcompound%d\n"  %(smile, (index+1))
+    return filename, sample
+
+def getSample(mol_list, number):
+    sample = ''
+    for index, mol in enumerate(mol_list):
+        smile = Chem.MolToSmiles(mol)
+        if (index < number):
+            sample += "%s\tcompound%d\n"  %(smile, (index+1))
+        else:
+            break
+    return sample
+
 def executeFile(filename, input_rxn_list, option_list = []):
     mol_list = readFile(filename)
     for rxn in input_rxn_list:
@@ -79,8 +117,7 @@ def executeFile(filename, input_rxn_list, option_list = []):
     ts = time.time()
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
     output_file = 'output'+st+'.smi'
-    created_output = False
-    sample = ''
+    outputCreated = False
     if len(option_list)>0:
         for option in option_list:
             if option['id'] == OPTIONS['3d']:
@@ -88,24 +125,12 @@ def executeFile(filename, input_rxn_list, option_list = []):
                 full_path_sdf_file = app.config['OUTPUT_FOLDER']+'/'+sdf_file
                 print('3D output: '+sdf_file)
                 result = sdf_file
-                created_output = True
-                make3D(mol_list, full_path_sdf_file)
-                for index, mol in enumerate(mol_list):
-                    smile = Chem.MolToSmiles(mol)
-                    if (index < 50):
-                        sample += "%s\tcompound%d\n"  %(smile, (index+1))
-                
+                make3DAfterReaction(mol_list, full_path_sdf_file)
+                outputCreated = True
+                sample = getSample(mol_list, 50)
                
-    if(not created_output):
-        w = open(app.config['OUTPUT_FOLDER']+'/'+output_file,"w+")
-        #w = Chem.SmilesWriter(app.config['OUTPUT_FOLDER']+'/'+output_file)
-        result = output_file
-        for index, mol in enumerate(mol_list):
-            smile = Chem.MolToSmiles(mol)
-            w.write("%s\tcompound%d\n"  %(smile, (index+1)))
-            if (index < 50):
-                sample += "%s\tcompound%d\n"  %(smile, (index+1))
-            #print(str(smile) + " compound " + str(index+1))
+    if (not outputCreated):
+        result, sample = writeMolToSmileFile(mol_list, output_file)      
     return result, sample
 
 @app.teardown_appcontext
@@ -187,5 +212,14 @@ def check_smart(smart):
         return json.dumps({"result":True})
     except Exception:
         return json.dumps({"result":False})
+
+@app.route('/tools/3d/<smiles>')
+def getSDF(smiles):
+    remover = SaltRemover()
+    outf = Chem.SDWriter(OUTPUT_FOLDER+'/test.sdf')
+    mol = Chem.MolFromSmiles(smiles)
+    make3DFromMol(mol, outf, remover)
+    return send_from_directory(app.config['OUTPUT_FOLDER'],
+                               'test.sdf', as_attachment=True)
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0') 

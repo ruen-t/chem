@@ -88,8 +88,8 @@ class ReactionController {
             self.selectedReactionList.forEach(function (item) {
                 reaction.push({ id: item.id, reagent: item.input_reagent, loop: item.loop })
             });
-            self.selectedOptionList.forEach(function(item){
-                options.push({id:item.id, code:0}); //code is for telling sub option 
+            self.selectedOptionList.forEach(function (item) {
+                options.push({ id: item.id, code: 0 }); //code is for telling sub option 
             });
             payload.append("reaction", JSON.stringify(reaction));
             payload.append("options", JSON.stringify(options));
@@ -131,7 +131,7 @@ class ReactionController {
                         element.loop = 1;
                         element.type = TYPE_REACTION;
                     });
-                    self.reactionList.push({ id: 0, display: "3D Maker", type: TYPE_OPTION, description:"", warn:"This option will take time to process"})
+                    self.reactionList.push({ id: 0, display: "3D Maker", type: TYPE_OPTION, description: "", warn: "This option will take time to process" })
 
                     resolve()
                 });
@@ -222,4 +222,4 @@ angular
                 });
             }
         };
-    });
+    })

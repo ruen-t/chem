@@ -52,28 +52,32 @@ def runReactionList(rxn, mol_list,reagent = None, loop_num = 1):
             all_products.append(p)
     return all_products
 
+def make3DFromMol(mol, sdWriter, saltRemover):
+    try:
+        non_salt = saltRemover(mol)
+    except:
+        non_salt = mol
+    try:
+        mol_hs = Chem.AddHs(non_salt)
+    except:
+        mol_hs = non_salt
+    try:
+        AllChem.EmbedMolecule(mol_hs, useRandomCoords=True)
+    except:
+        pass
+    try:
+        AllChem.MMFFOptimizeMolecule(mol_hs)
+    except:
+        pass
+    sdWriter.write(mol_hs)
+    return
+
 def make3D(mol_list, filename):
     remover = SaltRemover()
     outf = Chem.SDWriter(filename)
     for mol_index, mol in enumerate(mol_list):
         try:
-            try:
-                non_salt = remover(mol)
-            except:
-                non_salt = mol
-            try:
-                mol_hs = Chem.AddHs(non_salt)
-            except:
-                mol_hs = non_salt
-            try:
-                AllChem.EmbedMolecule(mol_hs, useRandomCoords=True)
-            except:
-                pass
-            try:
-                AllChem.MMFFOptimizeMolecule(mol_hs)
-            except:
-                pass
-            outf.write(mol_hs)
+            make3DFromMol(mol, sdWriter = outf, saltRemover = remover)
             print("write mol")
         except:
             print('ERROR :'+ str(mol_index))
