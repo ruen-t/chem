@@ -56,10 +56,13 @@ class ReactionController {
         }
         function addReaction(reaction) {
             if (reaction != null) {
+                
                 self.selectedReactionList.push(reaction);
             }
         }
         function addOption(option) {
+            console.log("add option")
+            console.log(option)
             if (option != null) {
                 self.selectedOptionList.push(option);
             }
@@ -90,7 +93,7 @@ class ReactionController {
             var reaction = [];
             var options = [];
             self.selectedReactionList.forEach(function (item) {
-                reaction.push({ id: item.id, reagent: item.input_reagent, loop: item.loop })
+                reaction.push({ id: item.id, reagent: item.input_reagent, loop: item.loop, hasReagent:item.hasReagent})
             });
             self.selectedOptionList.forEach(function (item) {
                 options.push({ id: item.id, code: 0 }); //code is for telling sub option 
@@ -223,28 +226,36 @@ class ReactionController {
             }
             return choice;
         }
-        function findReaction(id){
-            self.reactionList.forEach(function(item){
-                if(item.id==id){
-                    console.log("return item")
+       
+        function findBlock(id, type){
+            for(var i = 0;i<self.reactionList.length;i++){
+                let item = self.reactionList[i];
+                if(item.id==id && item.type == type){
                     return item;
                 }
-            });
+            }
+            return null;
         }
         function onDropFile(data) {
             var object = JSON.parse(data);
             var reaction = object.reaction;
-            console.log(reaction)
-            reaction.forEach(function (item) {
-            
-               var rxn =  findReaction(item.id);
-               console.log(item);
-               //rxn.loop = item.loop;
-               self.addReaction(rxn);
-            });
-            var option = object.option;
-            
             console.log(object)
+            reaction.forEach(function(item){
+                let rxn =  findBlock(item.id, TYPE_REACTION);
+                rxn.loop = item.loop;
+                rxn.hasReagent = item.hasReagent;
+                rxn.input_reagent = item.reagent;
+                self.addReaction(rxn);
+            })
+           
+           
+            var option_list = object.options;
+            option_list.forEach(function(item){
+                let option = findBlock(item.id, TYPE_OPTION);
+                addOption(option)
+            });
+            $scope.$apply();
+          
         }
 
 
