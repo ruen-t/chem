@@ -1,4 +1,4 @@
-<section  style="background-color:white;">
+<section style="background-color:white;">
   <div layout="row">
     <md-content class="md-padding" flex=70 style="background-color:white;">
       <form ng-submit="$event.preventDefault()">
@@ -74,17 +74,15 @@
     </li>
 
   </ul>
+
+
   <ul>
     <li class="ui-state-default" ng-repeat="item in vm.selectedOptionList" layout-padding style="padding-bottom: 10px;">
       <div layout="row" layout-xs="column">
-        <md-whiteframe class="md-whiteframe-2dp" layout-sm="column" layout-xs="column" flex-gt-xs="60" layout layout-align="left center">
-          <div style="padding-left: 30px">
-            <div>
-              {{item.display}}
-              
-              <span style="color:red; font-size: 0.7em">{{item.warn}}</span>
-            </div>
-          </div>
+        <md-whiteframe class="md-whiteframe-2dp" layout-sm="column" layout-xs="column" flex-gt-xs="70" layout layout-align="left center">
+
+          <ng-include src="item.template"  flex="100" ></ng-include>
+
         </md-whiteframe>
         <md-button id="remove" ng-click="vm.removeOption(item.id)" class="md-warn" layout ayout-align="right center">
           <md-icon class="material-icons">clear</md-icon>
@@ -92,7 +90,7 @@
       </div>
     </li>
   </ul>
-  
+
   <div layout-margin layout-padding layout="row">
     <choose-file layout="row" flex="40">
       <input id="fileInput" type="file" class="ng-hide">
@@ -106,11 +104,11 @@
         </md-button>
       </div>
     </choose-file>
-   
+
     <md-button id="workflow" ng-click="vm.getCurrentWorkFlow()" class="md-fab ">
-        <a id="config" style="display: none"></a>
-        <md-icon  class="material-icons" >save_alt</md-icon>
-      </md-button>
+      <a id="config" style="display: none"></a>
+      <md-icon class="material-icons">save_alt</md-icon>
+    </md-button>
     <md-button id="execute" ng-click="vm.sendRequest()" class="md-fab ">
       <md-icon class="material-icons">play_circle_outline</md-icon>
     </md-button>

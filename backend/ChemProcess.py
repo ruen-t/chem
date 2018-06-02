@@ -1,4 +1,5 @@
 from rdkit.Chem.SaltRemover import SaltRemover
+from vs_utils.features import MolPreparator
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from pythonds.basic.stack import Stack
@@ -52,11 +53,12 @@ def runReactionList(rxn, mol_list,reagent = None, loop_num = 1):
             all_products.append(p)
     return all_products
 
-def make3DFromMol(mol, sdWriter, saltRemover):
-    try:
-        non_salt = saltRemover(mol)
-    except:
-        non_salt = mol
+def make3DFromMol(mol, sdWriter, saltRemover = None):
+    if saltRemover!= None:
+        try:
+            non_salt = saltRemover(mol)
+        except:
+            non_salt = mol
     try:
         mol_hs = Chem.AddHs(non_salt)
     except:
@@ -70,14 +72,28 @@ def make3DFromMol(mol, sdWriter, saltRemover):
     except:
         pass
     sdWriter.write(mol_hs)
-    return
+    return mol_hs
 
-def make3D(mol_list, filename):
-    remover = SaltRemover()
+def make3D(mol_list, filename, removeSalt=True):
+    mol_list_result = []
+    if removeSalt:
+        remover = SaltRemover()
+    else:
+        remover = None
     outf = Chem.SDWriter(filename)
     for mol_index, mol in enumerate(mol_list):
         try:
-            make3DFromMol(mol, sdWriter = outf, saltRemover = remover)
+            mol_result = make3DFromMol(mol, sdWriter = outf, saltRemover = remover)
+            mol_list_result.append(mol_result)
             print("write mol")
         except:
             print('ERROR :'+ str(mol_index))
+    return mol_list_result
+
+def prepareMol(mol_list, ionize, pH, addHs ):
+    prepare = MolPreparator(ionize=ionize, pH=pH, add_hydrogens=addHs)
+    prepared_mol_list = []
+    for mol in mol_list:
+        prepared_mol = prepare(mol)
+        prepared_mol_list.append(prepared_mol)
+    return prepared_mol_list

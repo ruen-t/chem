@@ -15,7 +15,7 @@ from ChemProcess import *
 UPLOAD_FOLDER = '/home/tanapat_ruengsatra/htdocs/input'
 OUTPUT_FOLDER = '/home/tanapat_ruengsatra/htdocs/output'
 ALLOWED_EXTENSIONS = set(['smi', 'pbd', 'sdf'])
-OPTIONS = {'3d':0, '4d':1}
+OPTIONS = {'3d':0, 'prepare':1}
 
 
 app = Flask(__name__)
@@ -66,12 +66,14 @@ def make3DFromFile(filename, outputFileName):
     mol_list = readFile(filename)
     make3D(mol_list, outputFileName)
 
-def make3DAfterReaction(mol_list, filename):
+def make3DAfterReaction(mol_list, filename, option):
     smile_list = makeSmileList(mol_list)
     new_mol_list = []
     for smile in smile_list:
         new_mol_list.append(Chem.MolFromSmiles(smile))
-    make3D(new_mol_list, filename)
+    print(option)
+    removeSalt = option['removeSalt']
+    return make3D(new_mol_list, filename, removeSalt)
 
 def makeSmileList(mol_list):
     smile_list = []
@@ -99,7 +101,25 @@ def getSample(mol_list, number):
         else:
             break
     return sample
+def runOption(mol_list, option):
+    outputCreated = False
+    ts = time.time()
+    sdf_file = None
+    sample = None,
+    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+    if option['id'] == OPTIONS['3d']:
+        sdf_file ='output'+st+'.sdf'
+        full_path_sdf_file = app.config['OUTPUT_FOLDER']+'/'+sdf_file
+        mol_list_result = make3DAfterReaction(mol_list, full_path_sdf_file, option)
+        outputCreated = True
+        sample = getSample(mol_list_result, 50)
+    if option['id'] == OPTIONS['prepare']:
+        ionize = option['ionize']
+        pH = option['pH']
+        addHs = option['addHs']
+        mol_list_result = prepareMol(mol_list, ionize=ionize, pH = pH, addHs = addHs)
 
+    return sdf_file, sample, outputCreated, mol_list_result
 def executeFile(filename, input_rxn_list, option_list = []):
     mol_list = readFile(filename)
     for rxn in input_rxn_list:
@@ -120,14 +140,7 @@ def executeFile(filename, input_rxn_list, option_list = []):
     outputCreated = False
     if len(option_list)>0:
         for option in option_list:
-            if option['id'] == OPTIONS['3d']:
-                sdf_file ='output'+st+'.sdf'
-                full_path_sdf_file = app.config['OUTPUT_FOLDER']+'/'+sdf_file
-                print('3D output: '+sdf_file)
-                result = sdf_file
-                make3DAfterReaction(mol_list, full_path_sdf_file)
-                outputCreated = True
-                sample = getSample(mol_list, 50)
+            result, sample, outputCreated, mol_list = runOption(mol_list, option)
                
     if (not outputCreated):
         result, sample = writeMolToSmileFile(mol_list, output_file)      

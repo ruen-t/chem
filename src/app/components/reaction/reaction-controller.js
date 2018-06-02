@@ -32,6 +32,7 @@ class ReactionController {
         self.onDropFile = onDropFile;
         self.getCurrentWorkFlow = getCurrentWorkFlow;
         self.showDropZone = showDropZone;
+
         $("#sortable").sortable();
         $("#sortable").disableSelection();
 
@@ -93,10 +94,10 @@ class ReactionController {
             var reaction = [];
             var options = [];
             self.selectedReactionList.forEach(function (item) {
-                reaction.push({ id: item.id, reagent: item.input_reagent, loop: item.loop, hasReagent:item.hasReagent})
+                reaction.push(item)
             });
             self.selectedOptionList.forEach(function (item) {
-                options.push({ id: item.id, code: 0 }); //code is for telling sub option 
+                options.push(item);
             });
             var workFlow = { reaction, options };
             var json = JSON.stringify(workFlow);
@@ -119,7 +120,6 @@ class ReactionController {
             return JSON.stringify(workFlow);
         }
         function sendRequest() {
-
             var payload = new FormData();
             payload.append("file", $scope.file);
             var reaction = [];
@@ -128,7 +128,10 @@ class ReactionController {
                 reaction.push({ id: item.id, reagent: item.input_reagent, loop: item.loop })
             });
             self.selectedOptionList.forEach(function (item) {
-                options.push({ id: item.id, code: 0 }); //code is for telling sub option 
+                let option = Object.assign({}, item);
+                option.template = "";
+                option.warn = "";
+                options.push(option); 
             });
             payload.append("reaction", JSON.stringify(reaction));
             payload.append("options", JSON.stringify(options));
@@ -162,6 +165,7 @@ class ReactionController {
 
         }
         function loadAll() {
+            var option_dir = "app/components/reaction/options/";
             return new Promise(function (resolve, reject) {
                 $http.get(REACTION_API).then(function (response) {
                     self.reactionList = response.data.reaction;
@@ -170,8 +174,8 @@ class ReactionController {
                         element.loop = 1;
                         element.type = TYPE_REACTION;
                     });
-                    self.reactionList.push({ id: 0, display: "3D Maker", type: TYPE_OPTION, description: "", warn: "This option will take time to process" })
-
+                    self.reactionList.push({ id: 0, display: "3D Maker", type: TYPE_OPTION, ionize:false, ph:0, description: "", removeSalt:true, warn: "This option will take time to process", template:option_dir+"3dmaker.html" })
+                    self.reactionList.push({ id: 1, display: "Preparator", type: TYPE_OPTION, description: "", ionize:false, pH:0, addHs:true, removeSalt:true, template:option_dir+"preparator.html" })
                     resolve()
                 });
             })
@@ -241,18 +245,13 @@ class ReactionController {
             var reaction = object.reaction;
             console.log(object)
             reaction.forEach(function(item){
-                let rxn =  findBlock(item.id, TYPE_REACTION);
-                rxn.loop = item.loop;
-                rxn.hasReagent = item.hasReagent;
-                rxn.input_reagent = item.reagent;
-                self.addReaction(rxn);
+                self.addReaction(item);
             })
            
            
             var option_list = object.options;
             option_list.forEach(function(item){
-                let option = findBlock(item.id, TYPE_OPTION);
-                addOption(option)
+                addOption(item)
             });
             $scope.$apply();
           
@@ -293,5 +292,4 @@ angular
             }
         };
     })
-
 
