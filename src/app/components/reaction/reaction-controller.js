@@ -105,7 +105,7 @@ class ReactionController {
             var file;
             var data = [];
             data.push(json)
-            var filename = "structure.json";
+            var filename = "config.json";
             try {
                 file = new File(data, filename, properties);
             } catch (e) {
@@ -135,7 +135,7 @@ class ReactionController {
             });
             payload.append("reaction", JSON.stringify(reaction));
             payload.append("options", JSON.stringify(options));
-
+            self.sampleResult = "";
             $http({
                 url: RUN_REACTION_API,
                 method: 'POST',
@@ -174,7 +174,7 @@ class ReactionController {
                         element.loop = 1;
                         element.type = TYPE_REACTION;
                     });
-                    self.reactionList.push({ id: 0, display: "3D Maker", type: TYPE_OPTION, ionize:false, ph:0, description: "", removeSalt:true, warn: "This option will take time to process", template:option_dir+"3dmaker.html" })
+                    self.reactionList.push({ id: 0, display: "3D Maker", type: TYPE_OPTION, ionize:false, pH:0, description: "", removeSalt:true, warn: "This option will take time to process", template:option_dir+"3dmaker.html" })
                     self.reactionList.push({ id: 1, display: "Preparator", type: TYPE_OPTION, description: "", ionize:false, pH:0, addHs:true, removeSalt:true, template:option_dir+"preparator.html" })
                     resolve()
                 });

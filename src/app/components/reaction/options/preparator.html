@@ -10,10 +10,7 @@
             Ionize
         </md-switch>
         <md-input-container ng-if="item.ionize">
-            <label>pH</label>
-            <md-select name="type" ng-model="item.ph" required>
-                <md-option data-ng-repeat="i in [1,2,3,4,5,6,7,8,9,10,11,12,13,14]" ng-value="i">{{i}}</md-option>
-            </md-select>
+           <input type="number" ng-model="item.pH" step="0.1"/>
         </md-input-container>
     </div>
 </div>

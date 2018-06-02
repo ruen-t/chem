@@ -10,6 +10,7 @@ class StackItem:
 
 def runReaction(rxn, mol_reactant, reagent=None):
     products = []
+    name = mol_reactant.GetProp("_Name")
     try:
         if reagent!=None:
             result = rxn.RunReactants((mol_reactant,reagent))
@@ -18,13 +19,13 @@ def runReaction(rxn, mol_reactant, reagent=None):
         try: 
             if result[0]:
                 for product in result[0]:
-                    products.append(product)       
+                    product.SetProp("_Name", name+"*")
+                    products.append(product)      
         except IndexError:
             products.append(mol_reactant)
     except Exception:
         products.append(mol_reactant)
     return products
-
 
 def loopReaction(rxn, mol_ractant,reagent = None, loop_num = 1):
     reactant_stack = Stack()
@@ -74,8 +75,9 @@ def make3DFromMol(mol, sdWriter, saltRemover = None):
     sdWriter.write(mol_hs)
     return mol_hs
 
-def make3D(mol_list, filename, removeSalt=True):
+def make3D(mol_list, filename, removeSalt=True, ionize=False, pH = 7.0):
     mol_list_result = []
+    mol_list = prepareMol(mol_list, ionize, pH, False )
     if removeSalt:
         remover = SaltRemover()
     else:
@@ -90,10 +92,21 @@ def make3D(mol_list, filename, removeSalt=True):
             print('ERROR :'+ str(mol_index))
     return mol_list_result
 
+def makeSmileList(mol_list):
+    smile_list = []
+    name_list = []
+    for index, mol in enumerate(mol_list):
+        name = mol.GetProp("_Name")
+        smile = Chem.MolToSmiles(mol)
+        smile_list.append(smile)
+        name_list.append(name)
+    return smile_list, name_list
+
 def prepareMol(mol_list, ionize, pH, addHs ):
     prepare = MolPreparator(ionize=ionize, pH=pH, add_hydrogens=addHs)
     prepared_mol_list = []
     for mol in mol_list:
         prepared_mol = prepare(mol)
+        prepared_mol.SetProp("_Name", mol.GetProp("_Name"))
         prepared_mol_list.append(prepared_mol)
     return prepared_mol_list

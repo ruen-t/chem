@@ -62,34 +62,38 @@ def readFile(filename):
     print('Num of mol: '+ str(len(mol_list)))
     return mol_list
 
-def make3DFromFile(filename, outputFileName):
-    mol_list = readFile(filename)
-    make3D(mol_list, outputFileName)
 
 def make3DAfterReaction(mol_list, filename, option):
-    smile_list = makeSmileList(mol_list)
+    smile_list, name_list = makeSmileList(mol_list)
     new_mol_list = []
-    for smile in smile_list:
-        new_mol_list.append(Chem.MolFromSmiles(smile))
-    print(option)
+    for i  in range(len(smile_list)):
+        new_mol = Chem.MolFromSmiles(smile_list[i])
+        new_mol.SetProp("_Name", name_list[i])
+        new_mol_list.append(new_mol)
     removeSalt = option['removeSalt']
-    return make3D(new_mol_list, filename, removeSalt)
+    ionize = option['ionize']
+    pH = option['pH']
+
+    return make3D(new_mol_list, filename, removeSalt, ionize=ionize, pH=pH)
 
 def makeSmileList(mol_list):
     smile_list = []
+    name_list = []
     for index, mol in enumerate(mol_list):
+        name = mol.GetProp("_Name")
         smile = Chem.MolToSmiles(mol)
         smile_list.append(smile)
-    return smile_list
+        name_list.append(name)
+    return smile_list, name_list
 
 def writeMolToSmileFile(mol_list, filename):
     sample = ''
     w = open(app.config['OUTPUT_FOLDER']+'/'+filename,"w+")
     for index, mol in enumerate(mol_list):
         smile = Chem.MolToSmiles(mol)
-        w.write("%s\tcompound%d\n"  %(smile, (index+1)))
+        w.write("%s\t%s\n"  %(smile, mol.GetProp("_Name")))
         if (index < 50):
-            sample += "%s\tcompound%d\n"  %(smile, (index+1))
+            sample += "%s\t%s\n"  %(smile, mol.GetProp("_Name"))
     return filename, sample
 
 def getSample(mol_list, number):
@@ -97,7 +101,7 @@ def getSample(mol_list, number):
     for index, mol in enumerate(mol_list):
         smile = Chem.MolToSmiles(mol)
         if (index < number):
-            sample += "%s\tcompound%d\n"  %(smile, (index+1))
+            sample += "%s\t%s\n"  %(smile, mol.GetProp("_Name"))
         else:
             break
     return sample
@@ -116,8 +120,9 @@ def runOption(mol_list, option):
     if option['id'] == OPTIONS['prepare']:
         ionize = option['ionize']
         pH = option['pH']
+        print("pH: "+str(pH))
         addHs = option['addHs']
-        mol_list_result = prepareMol(mol_list, ionize=ionize, pH = pH, addHs = addHs)
+        mol_list_result = prepareMol(mol_list, ionize=ionize, pH = float(pH), addHs = addHs)
 
     return sdf_file, sample, outputCreated, mol_list_result
 def executeFile(filename, input_rxn_list, option_list = []):
