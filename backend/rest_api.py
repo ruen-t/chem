@@ -35,6 +35,16 @@ class ReactionItem:
         self.name = name
         self.description = description
 
+def cleanMolList(mol_list):
+    cleaned_mol_list = []
+    for index, mol in enumerate(mol_list):
+        try:
+            name = mol.GetProp("_Name")
+        except:
+            name = "unspecified"+str(index)
+            mol.SetProp("_Name", name)
+        cleaned_mol_list.append(mol)
+    return cleaned_mol_list
 
 def getAllReaction():
     rxn_list = []
@@ -76,15 +86,6 @@ def make3DAfterReaction(mol_list, filename, option):
 
     return make3D(new_mol_list, filename, removeSalt, ionize=ionize, pH=pH)
 
-def makeSmileList(mol_list):
-    smile_list = []
-    name_list = []
-    for index, mol in enumerate(mol_list):
-        name = mol.GetProp("_Name")
-        smile = Chem.MolToSmiles(mol)
-        smile_list.append(smile)
-        name_list.append(name)
-    return smile_list, name_list
 
 def writeMolToSmileFile(mol_list, filename):
     sample = ''
@@ -125,8 +126,10 @@ def runOption(mol_list, option):
         mol_list_result = prepareMol(mol_list, ionize=ionize, pH = float(pH), addHs = addHs)
 
     return sdf_file, sample, outputCreated, mol_list_result
-def executeFile(filename, input_rxn_list, option_list = []):
+def executeFile(filename, input_rxn_list, option_list = [], cleanFile = True):
     mol_list = readFile(filename)
+    if cleanFile:
+        mol_list = cleanMolList(mol_list)
     for rxn in input_rxn_list:
         rxn_id = int(rxn['id'])
         if rxn.has_key('reagent'):
@@ -177,6 +180,7 @@ def upload_file():
         file = request.files['file']
         reaction = json.loads(request.form['reaction'])
         options = json.loads(request.form['options'])
+        cleanInput = request.args.get("cleanInput")
         print(options)
         if file.filename == '':
             return json.dumps({'status':'no file'})
@@ -185,7 +189,7 @@ def upload_file():
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
-            result, sample = executeFile(file_path, reaction, option_list=options)
+            result, sample = executeFile(file_path, reaction, option_list=options, cleanFile = False)
             return json.dumps({"output":result, "sample": sample})
 
 

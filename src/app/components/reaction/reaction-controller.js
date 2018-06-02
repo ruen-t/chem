@@ -1,5 +1,5 @@
 var host = "http://35.198.250.233/"
-var RUN_REACTION_API = host + "upload"
+var RUN_REACTION_API = host + "upload?cleanInput=1"
 var REACTION_API = host + "resource/reaction"
 var GET_OUTPUT_API = host + 'download/'
 var CHECK_SMART_API = host + 'tools/smart/'
