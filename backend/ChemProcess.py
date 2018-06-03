@@ -106,7 +106,10 @@ def prepareMol(mol_list, ionize, pH, addHs ):
     prepare = MolPreparator(ionize=ionize, pH=pH, add_hydrogens=addHs)
     prepared_mol_list = []
     for mol in mol_list:
-        prepared_mol = prepare(mol)
+        try:
+            prepared_mol = prepare(mol)
+        except:
+            prepared_mol = mol
         prepared_mol.SetProp("_Name", mol.GetProp("_Name"))
         prepared_mol_list.append(prepared_mol)
     return prepared_mol_list
