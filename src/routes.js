@@ -22,5 +22,10 @@ function routesConfig($stateProvider, $urlRouterProvider, $locationProvider) {
       url: '/reaction',
       component: 'reaction'
     });
+    $stateProvider
+    .state('viewer', {
+      url: '/viewer',
+      component: 'viewer'
+    });
 
 }
