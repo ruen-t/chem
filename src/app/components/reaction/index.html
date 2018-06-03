@@ -123,9 +123,31 @@
     <label>{{vm.outputFile}}</label>
   </div>
 
-  <md-input-container class="md-block" flex="50" style="padding-left:40px; ">
+  <md-input-container ng-if="vm.showSmile && vm.outputReady" class="md-block" flex="50" style="padding-left:40px; ">
     <label style="padding-left:40px;">Sample Result</label>
     <textarea ng-model="vm.sampleResult" style="max-height:400px;min-height:400px; resize: none; overflow-y:scroll" rows="5"
       md-select-on-focus></textarea>
   </md-input-container>
+  
+  
+</section>
+<section ng-show="(!vm.showSmile) && vm.outputReady" ng-controller="ViewerController as vc">
+    <textarea ng-show="false" wrap="off" id="glmol01_src"></textarea>
+  
+    <div class="center" layout="column" >
+        <div class="center"  layout="row">
+          <div>
+            <md-button id="back" class="md-primary" ng-click="vc.changeIndex(-1)">
+              <md-icon class="material-icons">skip_previous</md-icon>
+            </md-button>
+          </div>
+          <div flex=50>{{vc.molecule_name }}<span>({{ vc.showIndex+1}} / {{vc.sdf_list.length}})</span></div>
+          <div>
+            <md-button id="next" class="md-primary" ng-click="vc.changeIndex(1)">
+              <md-icon class="material-icons">skip_next</md-icon>
+            </md-button>
+          </div>
+        </div>
+        <div id="glmol01"></div>
+      </div>
 </section>

@@ -16,6 +16,7 @@ UPLOAD_FOLDER = '/home/tanapat_ruengsatra/htdocs/input'
 OUTPUT_FOLDER = '/home/tanapat_ruengsatra/htdocs/output'
 ALLOWED_EXTENSIONS = set(['smi', 'pbd', 'sdf'])
 OPTIONS = {'3d':0, 'prepare':1}
+SAMPLE_PREFIX = 'sample_'
 
 
 app = Flask(__name__)
@@ -73,18 +74,23 @@ def readFile(filename):
     return mol_list
 
 
-def make3DAfterReaction(mol_list, filename, option):
+def make3DAfterReaction(mol_list, sdf_file, option, sample_size=50):
+    filename = app.config['OUTPUT_FOLDER']+'/'+sdf_file
     smile_list, name_list = makeSmileList(mol_list)
     new_mol_list = []
+    sample_mol_list = []
+    sample_filename =  app.config['OUTPUT_FOLDER']+'/'+SAMPLE_PREFIX+sdf_file
     for i  in range(len(smile_list)):
         new_mol = Chem.MolFromSmiles(smile_list[i])
         new_mol.SetProp("_Name", name_list[i])
         new_mol_list.append(new_mol)
+        if(i<50):
+            sample_mol_list.append(new_mol)
     removeSalt = option['removeSalt']
     ionize = option['ionize']
     pH = option['pH']
-
-    return make3D(new_mol_list, filename, removeSalt, ionize=ionize, pH=pH)
+    make3D(sample_mol_list, sample_filename, removeSalt, ionize=ionize, pH=pH)
+    return make3D(new_mol_list, filename, removeSalt, ionize=ionize, pH=pH), (SAMPLE_PREFIX+sdf_file)
 
 
 def writeMolToSmileFile(mol_list, filename):
@@ -110,14 +116,13 @@ def runOption(mol_list, option):
     outputCreated = False
     ts = time.time()
     sdf_file = None
-    sample = None,
+    sample = ""
     st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
     if option['id'] == OPTIONS['3d']:
         sdf_file ='output'+st+'.sdf'
-        full_path_sdf_file = app.config['OUTPUT_FOLDER']+'/'+sdf_file
-        mol_list_result = make3DAfterReaction(mol_list, full_path_sdf_file, option)
+        mol_list_result, sample = make3DAfterReaction(mol_list, sdf_file, option)
         outputCreated = True
-        sample = getSample(mol_list_result, 50)
+        #sample = getSample(mol_list_result, 50)
     if option['id'] == OPTIONS['prepare']:
         ionize = option['ionize']
         pH = option['pH']
@@ -128,6 +133,7 @@ def runOption(mol_list, option):
     return sdf_file, sample, outputCreated, mol_list_result
 def executeFile(filename, input_rxn_list, option_list = [], cleanFile = True):
     mol_list = readFile(filename)
+    sdf_output = False
     if cleanFile:
         mol_list = cleanMolList(mol_list)
     for rxn in input_rxn_list:
@@ -148,11 +154,13 @@ def executeFile(filename, input_rxn_list, option_list = [], cleanFile = True):
     outputCreated = False
     if len(option_list)>0:
         for option in option_list:
-            result, sample, outputCreated, mol_list = runOption(mol_list, option)
-               
-    if (not outputCreated):
-        result, sample = writeMolToSmileFile(mol_list, output_file)      
-    return result, sample
+            file_name, sample, outputCreated, mol_list = runOption(mol_list, option)
+            if(outputCreated):
+                sdf_output = True
+    
+    if (not sdf_output):
+        file_name, sample = writeMolToSmileFile(mol_list, output_file)      
+    return file_name, sample, sdf_output
 
 @app.teardown_appcontext
 def close_connection(exception):
@@ -189,14 +197,20 @@ def upload_file():
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
-            result, sample = executeFile(file_path, reaction, option_list=options, cleanFile = False)
-            return json.dumps({"output":result, "sample": sample})
+            result, sample, sdf_output = executeFile(file_path, reaction, option_list=options, cleanFile = False)
+            return json.dumps({"output":result, "sample": sample, "sdf": sdf_output})
 
 
 @app.route('/download/<path:filename>')
 def download_file(filename):
     return send_from_directory(app.config['OUTPUT_FOLDER'],
                                filename, as_attachment=True)
+
+@app.route('/viewfile/<path:filename>')
+def view_file(filename):
+    return send_from_directory(app.config['OUTPUT_FOLDER'],
+                               filename, as_attachment=False, mimetype='text/plain')
+
 
 @app.route('/resource/reaction', defaults={'rid': None}, methods=['GET','POST'] )
 @app.route('/resource/reaction/<rid>', methods=['GET','POST', 'DELETE'])
@@ -227,6 +241,8 @@ def get_reaction(rid):
             delete_db(rid)
         return json.dumps({"result":"delete successfully"})
     return json.dumps({"result":"please check http method"})
+
+
 @app.route('/tools/smart/<smart>')
 def check_smart(smart):
     try:

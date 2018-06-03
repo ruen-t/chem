@@ -1,61 +1,57 @@
 class ViewerController {
-  constructor() {
+  constructor($scope, $http) {
     console.log("ViewerController")
     var self = this;
+    self.reload = reload;
+    self.executeFile = executeFile;
+    self.sdf_list = [];
+    self.showIndex = 0;
+    self.molecule_name = "";
+    self.changeIndex = changeIndex;
 
+    var reader = new FileReader();
+    reader.onload = function (event) {
+      var data = event.target.result;
+      self.sdf_list = data.split("$$$$")
+      self.sdf_list =  self.sdf_list.map(s => s.trim());
+   
+      //console.log(self.sdf_list[1])
+      changeIndex(0);
+      $scope.$apply();
 
-    var glmol01 = new GLmol('glmol01', true);
-    var query = window.location.search.substring(1);
-    if (query == '') download('pdb:2POR');
-    else download(query);
-
-    function download(query) {
-      var baseURL = '';
-      if (query.substr(0, 4) == 'pdb:') {
-        query = query.substr(4).toUpperCase();
-        if (!query.match(/^[1-9][A-Za-z0-9]{3}$/)) {
-          alert("Wrong PDB ID");
-          return;
-        }
-        var uri = "http://www.pdb.org/pdb/files/" + query + ".pdb";
-      } else if (query.substr(0, 4) == 'cid:') {
-        query = query.substr(4);
-        if (!query.match(/^[1-9]+$/)) {
-          alert("Wrong Compound ID");
-          return;
-        }
-        uri = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/" + query +
-          "/SDF?record_type=3d";
-      }
-
-      $('#loading').show();
-      $.get(uri, function (ret) {
-        $("#glmol01_src").val(ret);
-        glmol01.loadMolecule();
-        $('#loading').hide();
-      });
-    }
-
-    function addTab(tabId, height, zIndex) {
-      $(tabId + ' .bottomTab').toggle(
-        function () {
-          $(tabId).
-          css('z-index', 100).
-          animate({
-            bottom: '0px',
-            'height': (window.innerWidth > 800) ? height : '600px'
-          });
+    };
+    $scope.$on('update_sdf_sample', function(event, args) {
+      console.log("update sdf form viewController");
+      console.log(args);
+      var sdf_file = args;
+      var url = GET_RAW_SDF + sdf_file;
+      $http({
+        url: url,
+        method: 'GET',
+        headers: {
+          'Content-Type': "text/plain"
         },
-        function () {
-          $(tabId).
-          css('z-index', zIndex).
-          animate({
-            bottom: '0px',
-            'height': '20px'
-          });
-        }
-      );
+        transformRequest: angular.identity
+      }).then(function (response) {
+        var data = response.data;
+        self.sdf_list = data.split("$$$$")
+        self.sdf_list =  self.sdf_list.map(s => s.trim());
+        changeIndex(0);
+
+      }, function (error) {
+        console.log(error)
+      })
+
+      // do what you want to do
+    });
+    function executeFile(){
+      console.log($scope.file)
+      reader.readAsText($scope.file);
     }
+    
+    var glmol01 = new GLmol('glmol01', true);
+   
+
 
     function loadFile() {
       var file = $('#glmol01_file').get(0);
@@ -79,12 +75,33 @@ class ViewerController {
       var imageURI = glmol01.renderer.domElement.toDataURL("image/png");
       window.open(imageURI);
     }
-
-    $('#glmol01_reload').click(function (ev) {
+    function changeIndex(value){
+    
+      self.showIndex += value;
+      if(self.showIndex<0){
+        self.showIndex = 0;
+      } 
+      if(self.showIndex >= self.sdf_list.length){
+        self.showIndex  = self.sdf_list.length - 1;
+      }
+      console.log("change index "+ self.showIndex);
+     
+      $("#glmol01_src").val(self.sdf_list[self.showIndex]);
+     // console.log(self.sdf_list[self.showIndex]);
+      reload();
+    }
+    function reload(){
+      
+      glmol01.loadMolecule();
+      console.log("reload: "+ glmol01.molecule_name)
+      self.molecule_name = glmol01.molecule_name;
+     // $scope.$apply();
+     // console.log( $("#glmol01_src").val().split("$$$$"))
       glmol01.defineRepresentation = defineRepFromController;
       glmol01.rebuildScene();
       glmol01.show();
-    });
+    }
+ 
 
     function defineRepFromController() {
       var idHeader = "#" + this.id + '_';
@@ -117,7 +134,7 @@ class ViewerController {
       var asu = new THREE.Object3D();
       var mainchainMode = "thickRibbon" //mod
       var showMainChain = true; //mod
-      var doNotSmoothen = false//mod
+      var doNotSmoothen = false //mod
       if (showMainChain) {
         if (mainchainMode == 'ribbon') {
           this.drawCartoon(asu, all, doNotSmoothen);
@@ -173,7 +190,7 @@ class ViewerController {
       }
       var showhetatm = true;
       if (showhetatm) {
-        var hetatmMode = "sphere"
+        var hetatmMode = "ballAndStick2"
         if (hetatmMode == 'stick') {
           this.drawBondsAsStick(target, hetatm, this.cylinderRadius, this.cylinderRadius, true);
         } else if (hetatmMode == 'sphere') {
@@ -196,7 +213,7 @@ class ViewerController {
       if (projectionMode == 'perspective') this.camera = this.perspectiveCamera;
       else if (projectionMode == 'orthoscopic') this.camera = this.orthoscopicCamera;
       var bgcolor = "0x888888"
-      this.setBackground(parseInt(bgcolor));
+      this.setBackground(parseInt(0));
       var cell = false; //mod
       if (cell) {
         this.drawUnitcell(this.modelGroup);
@@ -205,7 +222,7 @@ class ViewerController {
       if (biomt) {
         this.drawSymmetryMates2(this.modelGroup, asu, this.protein.biomtMatrices);
       }
-      var packing = false
+      var packing = false; //mod
       if (packing) {
         this.drawSymmetryMatesWithTranslation2(this.modelGroup, asu, this.protein.symMat);
       }
@@ -218,6 +235,7 @@ class ViewerController {
 }
 angular
   .module('app')
+  .controller('ViewerController', ViewerController)
   .component('viewer', {
     templateUrl: 'app/components/viewer/index.html',
     controller: ViewerController,
