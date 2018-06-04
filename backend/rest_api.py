@@ -65,10 +65,21 @@ def findReactionById(id):
     return None
 
 def readFile(filename):
-    print('reading file')
-    suppl = Chem.SmilesMolSupplier(filename, delimiter='\t',titleLine=False)
+    smiles_file = open(filename,"r")
     mol_list = []
-    for mol in suppl:
+    for line in smiles_file:
+        split_text = line.split('\t')
+        if(len(split_text) < 2):
+            split_text = line.split(' ')
+            if(len(split_text) < 2):
+                split_text = line.split(',')
+        smiles = split_text[0]
+        name = ''
+        for i in range(len(split_text)):
+            if(i>0):
+                name += split_text[i]
+        mol = Chem.MolFromSmiles(smiles)
+        mol.SetProp('_Name', name)
         mol_list.append(mol)
     print('Num of mol: '+ str(len(mol_list)))
     return mol_list

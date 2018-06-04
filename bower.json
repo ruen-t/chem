@@ -20,7 +20,13 @@
   },
   "overrides": {
     "bootstrap": {
-      "angular-ui-sortable": [
+      "main": [
+        "dist/css/bootstrap.css",
+        "dist/js/bootstrap.min.js"
+      ]
+    },
+    "angular-ui-sortable": {
+      "main": [
         "sortable.min.js"
       ]
     },

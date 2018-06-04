@@ -1,5 +1,8 @@
 <section layout-padding>
-  <textarea ng-show="false" wrap="off" id="glmol01_src"></textarea>
+  <div id="debug" ng-show="false">
+      <textarea  wrap="off" id="glmol01_src"></textarea> <button ng-click="vm.reload()"> reload</button>
+  </div>
+ 
   <div layout-margin layout-padding layout="row">
     <choose-file layout="row" flex="40">
       <input id="fileInput" type="file" class="ng-hide">
