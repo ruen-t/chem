@@ -1,0 +1,17 @@
+<div style="padding-left: 30px">
+    <div layout="row" flex=100 layout-padding>
+        <div style="height: 90px;line-height: 80px;" flex=30>{{item.display}}</div>
+        <md-input-container  flex=20  style="padding-top:20px" >
+            <md-checkbox name="addh" ng-model="item.removeSalt">
+                Remove Salt
+            </md-checkbox>
+        </md-input-container>
+        <md-switch class="md-primary" style="padding-top:20px" name="ionize" ng-model="item.ionize" layout-align="center center">
+            Ionize
+        </md-switch>
+         <md-input-container ng-if="item.ionize">
+           <input type="number" ng-model="item.pH" step="0.1"/>
+        </md-input-container>
+    </div>
+    <span style="color:red; font-size: 0.7em">{{item.warn}}</span>
+</div>

@@ -15,7 +15,8 @@ from ChemProcess import *
 UPLOAD_FOLDER = '/home/tanapat_ruengsatra/htdocs/input'
 OUTPUT_FOLDER = '/home/tanapat_ruengsatra/htdocs/output'
 ALLOWED_EXTENSIONS = set(['smi', 'pbd', 'sdf'])
-OPTIONS = {'3d':0, '4d':1}
+OPTIONS = {'3d':0, 'prepare':1}
+SAMPLE_PREFIX = 'sample_'
 
 
 app = Flask(__name__)
@@ -35,6 +36,16 @@ class ReactionItem:
         self.name = name
         self.description = description
 
+def cleanMolList(mol_list):
+    cleaned_mol_list = []
+    for index, mol in enumerate(mol_list):
+        try:
+            name = mol.GetProp("_Name")
+        except:
+            name = "unspecified"+str(index)
+            mol.SetProp("_Name", name)
+        cleaned_mol_list.append(mol)
+    return cleaned_mol_list
 
 def getAllReaction():
     rxn_list = []
@@ -62,32 +73,34 @@ def readFile(filename):
     print('Num of mol: '+ str(len(mol_list)))
     return mol_list
 
-def make3DFromFile(filename, outputFileName):
-    mol_list = readFile(filename)
-    make3D(mol_list, outputFileName)
 
-def make3DAfterReaction(mol_list, filename):
-    smile_list = makeSmileList(mol_list)
+def make3DAfterReaction(mol_list, sdf_file, option, sample_size=50):
+    filename = app.config['OUTPUT_FOLDER']+'/'+sdf_file
+    smile_list, name_list = makeSmileList(mol_list)
     new_mol_list = []
-    for smile in smile_list:
-        new_mol_list.append(Chem.MolFromSmiles(smile))
-    make3D(new_mol_list, filename)
+    sample_mol_list = []
+    sample_filename =  app.config['OUTPUT_FOLDER']+'/'+SAMPLE_PREFIX+sdf_file
+    for i  in range(len(smile_list)):
+        new_mol = Chem.MolFromSmiles(smile_list[i])
+        new_mol.SetProp("_Name", name_list[i])
+        new_mol_list.append(new_mol)
+        if(i<50):
+            sample_mol_list.append(new_mol)
+    removeSalt = option['removeSalt']
+    ionize = option['ionize']
+    pH = option['pH']
+    make3D(sample_mol_list, sample_filename, removeSalt, ionize=ionize, pH=pH)
+    return make3D(new_mol_list, filename, removeSalt, ionize=ionize, pH=pH), (SAMPLE_PREFIX+sdf_file)
 
-def makeSmileList(mol_list):
-    smile_list = []
-    for index, mol in enumerate(mol_list):
-        smile = Chem.MolToSmiles(mol)
-        smile_list.append(smile)
-    return smile_list
 
 def writeMolToSmileFile(mol_list, filename):
     sample = ''
     w = open(app.config['OUTPUT_FOLDER']+'/'+filename,"w+")
     for index, mol in enumerate(mol_list):
         smile = Chem.MolToSmiles(mol)
-        w.write("%s\tcompound%d\n"  %(smile, (index+1)))
+        w.write("%s\t%s\n"  %(smile, mol.GetProp("_Name")))
         if (index < 50):
-            sample += "%s\tcompound%d\n"  %(smile, (index+1))
+            sample += "%s\t%s\n"  %(smile, mol.GetProp("_Name"))
     return filename, sample
 
 def getSample(mol_list, number):
@@ -95,13 +108,34 @@ def getSample(mol_list, number):
     for index, mol in enumerate(mol_list):
         smile = Chem.MolToSmiles(mol)
         if (index < number):
-            sample += "%s\tcompound%d\n"  %(smile, (index+1))
+            sample += "%s\t%s\n"  %(smile, mol.GetProp("_Name"))
         else:
             break
     return sample
+def runOption(mol_list, option):
+    outputCreated = False
+    ts = time.time()
+    sdf_file = None
+    sample = ""
+    st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H-%M-%S')
+    if option['id'] == OPTIONS['3d']:
+        sdf_file ='output'+st+'.sdf'
+        mol_list_result, sample = make3DAfterReaction(mol_list, sdf_file, option)
+        outputCreated = True
+        #sample = getSample(mol_list_result, 50)
+    if option['id'] == OPTIONS['prepare']:
+        ionize = option['ionize']
+        pH = option['pH']
+        print("pH: "+str(pH))
+        addHs = option['addHs']
+        mol_list_result = prepareMol(mol_list, ionize=ionize, pH = float(pH), addHs = addHs)
 
-def executeFile(filename, input_rxn_list, option_list = []):
+    return sdf_file, sample, outputCreated, mol_list_result
+def executeFile(filename, input_rxn_list, option_list = [], cleanFile = True):
     mol_list = readFile(filename)
+    sdf_output = False
+    if cleanFile:
+        mol_list = cleanMolList(mol_list)
     for rxn in input_rxn_list:
         rxn_id = int(rxn['id'])
         if rxn.has_key('reagent'):
@@ -120,18 +154,13 @@ def executeFile(filename, input_rxn_list, option_list = []):
     outputCreated = False
     if len(option_list)>0:
         for option in option_list:
-            if option['id'] == OPTIONS['3d']:
-                sdf_file ='output'+st+'.sdf'
-                full_path_sdf_file = app.config['OUTPUT_FOLDER']+'/'+sdf_file
-                print('3D output: '+sdf_file)
-                result = sdf_file
-                make3DAfterReaction(mol_list, full_path_sdf_file)
-                outputCreated = True
-                sample = getSample(mol_list, 50)
-               
-    if (not outputCreated):
-        result, sample = writeMolToSmileFile(mol_list, output_file)      
-    return result, sample
+            file_name, sample, outputCreated, mol_list = runOption(mol_list, option)
+            if(outputCreated):
+                sdf_output = True
+    
+    if (not sdf_output):
+        file_name, sample = writeMolToSmileFile(mol_list, output_file)      
+    return file_name, sample, sdf_output
 
 @app.teardown_appcontext
 def close_connection(exception):
@@ -159,6 +188,7 @@ def upload_file():
         file = request.files['file']
         reaction = json.loads(request.form['reaction'])
         options = json.loads(request.form['options'])
+        cleanInput = request.args.get("cleanInput")
         print(options)
         if file.filename == '':
             return json.dumps({'status':'no file'})
@@ -167,14 +197,20 @@ def upload_file():
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
-            result, sample = executeFile(file_path, reaction, option_list=options)
-            return json.dumps({"output":result, "sample": sample})
+            result, sample, sdf_output = executeFile(file_path, reaction, option_list=options, cleanFile = False)
+            return json.dumps({"output":result, "sample": sample, "sdf": sdf_output})
 
 
 @app.route('/download/<path:filename>')
 def download_file(filename):
     return send_from_directory(app.config['OUTPUT_FOLDER'],
                                filename, as_attachment=True)
+
+@app.route('/viewfile/<path:filename>')
+def view_file(filename):
+    return send_from_directory(app.config['OUTPUT_FOLDER'],
+                               filename, as_attachment=False, mimetype='text/plain')
+
 
 @app.route('/resource/reaction', defaults={'rid': None}, methods=['GET','POST'] )
 @app.route('/resource/reaction/<rid>', methods=['GET','POST', 'DELETE'])
@@ -205,6 +241,8 @@ def get_reaction(rid):
             delete_db(rid)
         return json.dumps({"result":"delete successfully"})
     return json.dumps({"result":"please check http method"})
+
+
 @app.route('/tools/smart/<smart>')
 def check_smart(smart):
     try:

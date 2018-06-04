@@ -1,4 +1,4 @@
-<section>
+<section style="background-color:white;">
   <div layout="row">
     <md-content class="md-padding" flex=70 style="background-color:white;">
       <form ng-submit="$event.preventDefault()">
@@ -74,17 +74,15 @@
     </li>
 
   </ul>
+
+
   <ul>
     <li class="ui-state-default" ng-repeat="item in vm.selectedOptionList" layout-padding style="padding-bottom: 10px;">
       <div layout="row" layout-xs="column">
-        <md-whiteframe class="md-whiteframe-2dp" layout-sm="column" layout-xs="column" flex-gt-xs="60" layout layout-align="left center">
-          <div style="padding-left: 30px">
-            <div>
-              {{item.display}}
-              
-              <span style="color:red; font-size: 0.7em">{{item.warn}}</span>
-            </div>
-          </div>
+        <md-whiteframe class="md-whiteframe-2dp" layout-sm="column" layout-xs="column" flex-gt-xs="70" layout layout-align="left center">
+
+          <ng-include src="item.template"  flex="100" ></ng-include>
+
         </md-whiteframe>
         <md-button id="remove" ng-click="vm.removeOption(item.id)" class="md-warn" layout ayout-align="right center">
           <md-icon class="material-icons">clear</md-icon>
@@ -92,7 +90,7 @@
       </div>
     </li>
   </ul>
-  
+
   <div layout-margin layout-padding layout="row">
     <choose-file layout="row" flex="40">
       <input id="fileInput" type="file" class="ng-hide">
@@ -106,11 +104,11 @@
         </md-button>
       </div>
     </choose-file>
-   
+
     <md-button id="workflow" ng-click="vm.getCurrentWorkFlow()" class="md-fab ">
-        <a id="config" style="display: none"></a>
-        <md-icon  class="material-icons" >save_alt</md-icon>
-      </md-button>
+      <a id="config" style="display: none"></a>
+      <md-icon class="material-icons">save_alt</md-icon>
+    </md-button>
     <md-button id="execute" ng-click="vm.sendRequest()" class="md-fab ">
       <md-icon class="material-icons">play_circle_outline</md-icon>
     </md-button>
@@ -125,9 +123,31 @@
     <label>{{vm.outputFile}}</label>
   </div>
 
-  <md-input-container class="md-block" flex="50" style="padding-left:40px; ">
+  <md-input-container ng-if="vm.showSmile && vm.outputReady" class="md-block" flex="50" style="padding-left:40px; ">
     <label style="padding-left:40px;">Sample Result</label>
     <textarea ng-model="vm.sampleResult" style="max-height:400px;min-height:400px; resize: none; overflow-y:scroll" rows="5"
       md-select-on-focus></textarea>
   </md-input-container>
+  
+  
+</section>
+<section ng-show="(!vm.showSmile) && vm.outputReady" ng-controller="ViewerController as vc">
+    <textarea ng-show="false" wrap="off" id="glmol01_src"></textarea>
+  
+    <div class="center" layout="column" >
+        <div class="center"  layout="row">
+          <div>
+            <md-button id="back" class="md-primary" ng-click="vc.changeIndex(-1)">
+              <md-icon class="material-icons">skip_previous</md-icon>
+            </md-button>
+          </div>
+          <div flex=50>{{vc.molecule_name }}<span>({{ vc.showIndex+1}} / {{vc.sdf_list.length}})</span></div>
+          <div>
+            <md-button id="next" class="md-primary" ng-click="vc.changeIndex(1)">
+              <md-icon class="material-icons">skip_next</md-icon>
+            </md-button>
+          </div>
+        </div>
+        <div id="glmol01"></div>
+      </div>
 </section>

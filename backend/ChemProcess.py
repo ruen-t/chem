@@ -1,4 +1,5 @@
 from rdkit.Chem.SaltRemover import SaltRemover
+from vs_utils.features import MolPreparator
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from pythonds.basic.stack import Stack
@@ -9,6 +10,7 @@ class StackItem:
 
 def runReaction(rxn, mol_reactant, reagent=None):
     products = []
+    name = mol_reactant.GetProp("_Name")
     try:
         if reagent!=None:
             result = rxn.RunReactants((mol_reactant,reagent))
@@ -17,13 +19,13 @@ def runReaction(rxn, mol_reactant, reagent=None):
         try: 
             if result[0]:
                 for product in result[0]:
-                    products.append(product)       
+                    product.SetProp("_Name", name+"*")
+                    products.append(product)      
         except IndexError:
             products.append(mol_reactant)
     except Exception:
         products.append(mol_reactant)
     return products
-
 
 def loopReaction(rxn, mol_ractant,reagent = None, loop_num = 1):
     reactant_stack = Stack()
@@ -52,11 +54,12 @@ def runReactionList(rxn, mol_list,reagent = None, loop_num = 1):
             all_products.append(p)
     return all_products
 
-def make3DFromMol(mol, sdWriter, saltRemover):
-    try:
-        non_salt = saltRemover(mol)
-    except:
-        non_salt = mol
+def make3DFromMol(mol, sdWriter, saltRemover = None):
+    if saltRemover!= None:
+        try:
+            non_salt = saltRemover(mol)
+        except:
+            non_salt = mol
     try:
         mol_hs = Chem.AddHs(non_salt)
     except:
@@ -70,14 +73,43 @@ def make3DFromMol(mol, sdWriter, saltRemover):
     except:
         pass
     sdWriter.write(mol_hs)
-    return
+    return mol_hs
 
-def make3D(mol_list, filename):
-    remover = SaltRemover()
+def make3D(mol_list, filename, removeSalt=True, ionize=False, pH = 7.0):
+    mol_list_result = []
+    mol_list = prepareMol(mol_list, ionize, pH, False )
+    if removeSalt:
+        remover = SaltRemover()
+    else:
+        remover = None
     outf = Chem.SDWriter(filename)
     for mol_index, mol in enumerate(mol_list):
         try:
-            make3DFromMol(mol, sdWriter = outf, saltRemover = remover)
+            mol_result = make3DFromMol(mol, sdWriter = outf, saltRemover = remover)
+            mol_list_result.append(mol_result)
             print("write mol")
         except:
             print('ERROR :'+ str(mol_index))
+    return mol_list_result
+
+def makeSmileList(mol_list):
+    smile_list = []
+    name_list = []
+    for index, mol in enumerate(mol_list):
+        name = mol.GetProp("_Name")
+        smile = Chem.MolToSmiles(mol)
+        smile_list.append(smile)
+        name_list.append(name)
+    return smile_list, name_list
+
+def prepareMol(mol_list, ionize, pH, addHs ):
+    prepare = MolPreparator(ionize=ionize, pH=pH, add_hydrogens=addHs)
+    prepared_mol_list = []
+    for mol in mol_list:
+        try:
+            prepared_mol = prepare(mol)
+        except:
+            prepared_mol = mol
+        prepared_mol.SetProp("_Name", mol.GetProp("_Name"))
+        prepared_mol_list.append(prepared_mol)
+    return prepared_mol_list
