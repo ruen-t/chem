@@ -78,6 +78,7 @@ def readFile(filename):
         for i in range(len(split_text)):
             if(i>0):
                 name += split_text[i]
+        name = name.rstrip()
         mol = Chem.MolFromSmiles(smiles)
         mol.SetProp('_Name', name)
         mol_list.append(mol)
