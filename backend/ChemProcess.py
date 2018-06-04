@@ -110,6 +110,8 @@ def prepareMol(mol_list, ionize, pH, addHs ):
             prepared_mol = prepare(mol)
         except:
             prepared_mol = mol
-        prepared_mol.SetProp("_Name", mol.GetProp("_Name"))
+        name = mol.GetProp("_Name")
+        prepared_mol.SetProp("_Name", name)
+        prepared_mol.SetProp("Name", name)
         prepared_mol_list.append(prepared_mol)
     return prepared_mol_list
