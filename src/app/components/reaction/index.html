@@ -1,153 +1,157 @@
-<section style="background-color:white;">
-  <div layout="row">
-    <md-content class="md-padding" flex=70 style="background-color:white;">
-      <form ng-submit="$event.preventDefault()">
+<section id="reaction" layout-padding>
+  <section style="background-color:white;">
+    <div layout="row">
+      <md-content class="md-padding" flex=70 style="background-color:white;">
+        <form ng-submit="$event.preventDefault()">
 
-        <md-autocomplete ng-disabled="vm.isDisabled" md-no-cache="vm.noCache" md-selected-item="vm.selectedItem" md-search-text-change="vm.searchTextChange(vm.searchText)"
-          md-search-text="vm.searchText" md-selected-item-change="vm.selectedItemChange(item)" md-items="item in vm.querySearch(vm.searchText)"
-          md-item-text="item.display" md-min-length="0" placeholder="Search reaction">
-          <md-item-template>
-            <span md-highlight-text="vm.searchText" md-highlight-flags="gi">{{item.display}}</span>
-          </md-item-template>
-          <md-not-found>
-            No states matching "{{vm.searchText}}" were found.
-            <a ng-click="vm.addNewReaction($event)">Create a new one!</a>
-          </md-not-found>
+          <md-autocomplete ng-disabled="vm.isDisabled" md-no-cache="vm.noCache" md-selected-item="vm.selectedItem" md-search-text-change="vm.searchTextChange(vm.searchText)"
+            md-search-text="vm.searchText" md-selected-item-change="vm.selectedItemChange(item)" md-items="item in vm.querySearch(vm.searchText)"
+            md-item-text="item.display" md-min-length="0" placeholder="Search reaction">
+            <md-item-template>
+              <span md-highlight-text="vm.searchText" md-highlight-flags="gi">{{item.display}}</span>
+            </md-item-template>
+            <md-not-found>
+              No states matching "{{vm.searchText}}" were found.
+              <a ng-click="vm.addNewReaction($event)">Create a new one!</a>
+            </md-not-found>
 
-        </md-autocomplete>
+          </md-autocomplete>
 
-        <br/>
+          <br/>
 
-      </form>
+        </form>
 
-    </md-content>
-    <md-button id="add_button" ng-click="vm.addNewReaction($event)" class="md-fab ">
-      <md-icon class="material-icons">add_circle</md-icon>
-    </md-button>
-    <md-button id="edit_button" ng-click="vm.editReaction($event)" class="md-fab">
-      <md-icon class="material-icons">edit</md-icon>
-    </md-button>
-  </div>
+      </md-content>
+      <md-button id="add_button" ng-click="vm.addNewReaction($event)" class="md-fab ">
+        <md-icon class="material-icons">add_circle</md-icon>
+      </md-button>
+      <md-button id="edit_button" ng-click="vm.editReaction($event)" class="md-fab">
+        <md-icon class="material-icons">edit</md-icon>
+      </md-button>
+    </div>
 
 
-  <div ng-if="vm.showDropZone()" dropzone>Drop Files Here</div>
-  <ul id="reaction_list" ui-sortable ng-model="vm.selectedReactionList">
+    <div ng-if="vm.showDropZone()" dropzone>Drop your workflow file here</div>
+    <ul id="reaction_list" ui-sortable ng-model="vm.selectedReactionList">
 
-    <li ng-repeat="item in vm.selectedReactionList track by $index" class="ui-state-default" layout-padding style="padding-bottom: 10px;">
-      <div layout="row" layout-xs="column">
-        <md-whiteframe class="md-whiteframe-2dp" layout-sm="column" layout-xs="column" flex-gt-xs="60" layout layout-align="left center">
-          <div flex=70 style="padding-left: 30px">
-            <div flex=70>
-              {{item.name}}
+      <li ng-repeat="item in vm.selectedReactionList track by $index" class="ui-state-default" layout-padding style="padding-bottom: 10px;">
+        <div layout="row" layout-xs="column">
+          <md-whiteframe class="md-whiteframe-2dp" layout-sm="column" layout-xs="column" flex-gt-xs="60" layout layout-align="left center">
+            <div flex=70 style="padding-left: 30px">
+              <div flex=70>
+                {{item.name}}
+              </div>
+              <textarea id="smart_display" disabled> {{item.smart}} </textarea>
             </div>
-            <textarea id="smart_display" disabled> {{item.smart}} </textarea>
-          </div>
 
 
-          <div layout layout-align="right right" flex="20">
-            <md-input-container flex="70">
-              <label>Loop</label>
-              <md-select name="loop" ng-model="item.loop">
-                <md-option ng-repeat="choice in vm.loopChoice" ng-value="choice.value">{{choice.display}}</md-option>
-              </md-select>
+            <div layout layout-align="right right" flex="20">
+              <md-input-container flex="70">
+                <label>Loop</label>
+                <md-select name="loop" ng-model="item.loop">
+                  <md-option ng-repeat="choice in vm.loopChoice" ng-value="choice.value">{{choice.display}}</md-option>
+                </md-select>
+              </md-input-container>
+            </div>
+            <div>
+              <md-input-container flex layout-padding>
+                <md-switch ng-model="item.hasReagent">Reagent</md-switch>
+              </md-input-container>
+            </div>
+          </md-whiteframe>
+          <md-whiteframe class="md-whiteframe-2dp" ng-if="item.hasReagent" layout-padding>
+            <md-input-container>
+              <label>Reagent (smiles input)</label>
+              <input ng-model="item.input_reagent">
             </md-input-container>
-          </div>
-          <div>
-            <md-input-container flex layout-padding>
-              <md-switch ng-model="item.hasReagent">Reagent</md-switch>
-            </md-input-container>
-          </div>
-        </md-whiteframe>
-        <md-whiteframe class="md-whiteframe-2dp" ng-if="item.hasReagent" layout-padding>
-          <md-input-container>
-            <label>Reagent (smiles input)</label>
-            <input ng-model="item.input_reagent">
-          </md-input-container>
-        </md-whiteframe>
+          </md-whiteframe>
 
 
-        <md-button id="remove" ng-click="vm.removeReaction(item.id)" class="md-warn" layout ayout-align="right center">
-          <md-icon class="material-icons">clear</md-icon>
-        </md-button>
-      </div>
-
-    </li>
-
-  </ul>
-
-
-  <ul>
-    <li class="ui-state-default" ng-repeat="item in vm.selectedOptionList" layout-padding style="padding-bottom: 10px;">
-      <div layout="row" layout-xs="column">
-        <md-whiteframe class="md-whiteframe-2dp" layout-sm="column" layout-xs="column" flex-gt-xs="70" layout layout-align="left center">
-
-          <ng-include src="item.template"  flex="100" ></ng-include>
-
-        </md-whiteframe>
-        <md-button id="remove" ng-click="vm.removeOption(item.id)" class="md-warn" layout ayout-align="right center">
-          <md-icon class="material-icons">clear</md-icon>
-        </md-button>
-      </div>
-    </li>
-  </ul>
-
-  <div layout-margin layout-padding layout="row">
-    <choose-file layout="row" flex="40">
-      <input id="fileInput" type="file" class="ng-hide">
-      <md-input-container flex class="md-block">
-        <input type="text" ng-model="fileName" disabled>
-        <div class="hint">Input reactant</div>
-      </md-input-container>
-      <div>
-        <md-button id="uploadButton" class="md-primary md-fab md-mini">
-          <md-icon class="material-icons">attach_file</md-icon>
-        </md-button>
-      </div>
-    </choose-file>
-
-    <md-button id="workflow" ng-click="vm.getCurrentWorkFlow()" class="md-fab ">
-      <a id="config" style="display: none"></a>
-      <md-icon class="material-icons">save_alt</md-icon>
-    </md-button>
-    <md-button id="execute" ng-click="vm.sendRequest()" class="md-fab ">
-      <md-icon class="material-icons">play_circle_outline</md-icon>
-    </md-button>
-  </div>
-
-
-  <div>
-    <md-button ng-if="vm.outputReady" ng-click="vm.downloadFile()" class="md-fab ">
-      <md-icon class="material-icons">save_alt</md-icon>
-
-    </md-button>
-    <label>{{vm.outputFile}}</label>
-  </div>
-
-  <md-input-container ng-if="vm.showSmile && vm.outputReady" class="md-block" flex="50" style="padding-left:40px; ">
-    <label style="padding-left:40px;">Sample Result</label>
-    <textarea ng-model="vm.sampleResult" style="max-height:400px;min-height:400px; resize: none; overflow-y:scroll" rows="5"
-      md-select-on-focus></textarea>
-  </md-input-container>
-  
-  
-</section>
-<section ng-show="(!vm.showSmile) && vm.outputReady" ng-controller="ViewerController as vc">
-    <textarea ng-show="false" wrap="off" id="glmol01_src"></textarea>
-  
-    <div class="center" layout="column" >
-        <div class="center"  layout="row">
-          <div>
-            <md-button id="back" class="md-primary" ng-click="vc.changeIndex(-1)">
-              <md-icon class="material-icons">skip_previous</md-icon>
-            </md-button>
-          </div>
-          <div flex=50>{{vc.molecule_name }}<span>({{ vc.showIndex+1}} / {{vc.sdf_list.length}})</span></div>
-          <div>
-            <md-button id="next" class="md-primary" ng-click="vc.changeIndex(1)">
-              <md-icon class="material-icons">skip_next</md-icon>
-            </md-button>
-          </div>
+          <md-button id="remove" ng-click="vm.removeReaction(item.id)" class="md-warn" layout ayout-align="right center">
+            <md-icon class="material-icons">clear</md-icon>
+          </md-button>
         </div>
-        <div id="glmol01"></div>
+
+      </li>
+
+    </ul>
+
+
+    <ul>
+      <li class="ui-state-default" ng-repeat="item in vm.selectedOptionList" layout-padding style="padding-bottom: 10px;">
+        <div layout="row" layout-xs="column">
+          <md-whiteframe class="md-whiteframe-2dp" layout-sm="column" layout-xs="column" flex-gt-xs="70" layout layout-align="left center">
+
+            <ng-include src="item.template" flex="100"></ng-include>
+
+          </md-whiteframe>
+          <md-button id="remove" ng-click="vm.removeOption(item.id)" class="md-warn" layout ayout-align="right center">
+            <md-icon class="material-icons">clear</md-icon>
+          </md-button>
+        </div>
+      </li>
+    </ul>
+
+    <div layout-margin layout-padding layout="row">
+      <choose-file layout="row" flex="40">
+        <input id="fileInput" type="file" class="ng-hide">
+        <md-input-container flex class="md-block">
+          <input type="text" ng-model="fileName" disabled>
+          <div class="hint">Input reactant</div>
+        </md-input-container>
+        <div>
+          <md-button id="uploadButton" class="md-primary md-fab md-mini">
+            <md-icon class="material-icons">attach_file</md-icon>
+          </md-button>
+        </div>
+      </choose-file>
+
+      <md-button id="workflow" ng-click="vm.getCurrentWorkFlow()" class="md-fab ">
+        <a id="config" style="display: none"></a>
+        <md-icon class="material-icons">save_alt</md-icon>
+      </md-button>
+      <md-button id="execute" ng-click="vm.sendRequest()" class="md-fab ">
+        <md-icon class="material-icons">play_circle_outline</md-icon>
+      </md-button>
+    </div>
+
+
+    <div>
+      <md-button ng-if="vm.outputReady" ng-click="vm.downloadFile()" class="md-fab ">
+        <md-icon class="material-icons">save_alt</md-icon>
+
+      </md-button>
+      <label>{{vm.outputFile}}</label>
+    </div>
+
+    <md-input-container ng-if="vm.showSmile && vm.outputReady" class="md-block" flex="50" style="padding-left:40px; ">
+      <label style="padding-left:40px;">Sample Result</label>
+      <textarea ng-model="vm.sampleResult" style="max-height:400px;min-height:400px; resize: none; overflow-y:scroll" rows="5"
+        md-select-on-focus></textarea>
+    </md-input-container>
+
+
+  </section>
+  <section ng-show="((!vm.showSmile) && vm.outputReady)" ng-controller="ViewerController as vc">
+    <textarea ng-show="false" wrap="off" id="glmol01_src"></textarea>
+
+    <div layout="column">
+      <div class="center" layout="row">
+        <div>
+          <md-button id="back" class="md-primary" ng-click="vc.changeIndex(-1)">
+            <md-icon class="material-icons">skip_previous</md-icon>
+          </md-button>
+        </div>
+        <div flex=60 layout-padding style="padding-top:12px">{{vc.molecule_name }}
+          <span style="padding-left: 20px">({{ vc.showIndex+1}} / {{vc.sdf_list.length}})</span>
+        </div>
+        <div>
+          <md-button id="next" class="md-primary" ng-click="vc.changeIndex(1)">
+            <md-icon class="material-icons">skip_next</md-icon>
+          </md-button>
+        </div>
       </div>
+      <div id="glmol01"></div>
+    </div>
+  </section>
 </section>

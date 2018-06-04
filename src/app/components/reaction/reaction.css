@@ -1,19 +1,20 @@
-ul#reaction_list{
+
+#reaction ul#reaction_list{
     list-style-type: decimal;
   }
-#edit_button{
+#reaction #edit_button{
   background-color: orange;
 }
-#smart_display{
+#reaction #smart_display{
   min-width: 300px;
   color: #b53232;
   background-color: #d8d4d4;
 
 }
-#new-reaction-dialog{
+#reaction #new-reaction-dialog{
   width: 400px;
 }
-div[dropzone] {
+#reaction div[dropzone] {
   border: 2px dashed #bbb;
   border-radius: 5px;
   padding: 25px;

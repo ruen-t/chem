@@ -35,7 +35,30 @@ angular
     }
   })
 
-function IndexController($state) {
-  this.goto = $state.go
-
+function IndexController($scope, $state, $mdSidenav) {
+  this.goto = $state.go;
+  var self = this;
+  $scope.toggleLeft = buildToggler('left');
+  this.closeLeft = buildClose('left');
+  this.changeMenu = changeMenu;
+  self.menuList = [
+    { name: 'Reaction', page:'reaction', icon: 'star'},
+    { name: 'Viewer', page:'viewer', icon: 'important_devices' },
+  ];
+  function changeMenu(page){
+    console.log(page)
+    self.goto(page);
+    self.closeLeft();
+    
+  }
+  function buildToggler(componentId) {
+    return function() {
+      $mdSidenav(componentId).toggle();
+    };
+  }
+  function buildClose(componentId) {
+    return function() {
+      $mdSidenav(componentId).close();
+    };
+  }
 }

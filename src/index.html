@@ -24,8 +24,37 @@
 
 
 <body ng-app="app" style="background-color:white;">
+
   <div ng-controller="IndexController as vm" ng-cloak>
+    <md-sidenav class="md-sidenav-left" md-component-id="left" 
+    md-disable-backdrop md-whiteframe="4">
+
+      <md-toolbar class="md-theme-indigo">
+        <div layout="row">
+          <h1 class="md-toolbar-tools">Chem Tools</h1>
+          <md-button ng-click="toggleLeft()" >
+            <md-icon class="material-icons">clear</md-icon>
+          </md-button>
+        </div>
+
+      </md-toolbar>
+
+      <md-content layout-margin>
+        <md-list-item ng-click="vm.changeMenu(menu.page)" ng-repeat="menu in vm.menuList">
+          <div layout="row">
+              <md-icon class="material-icons" >{{menu.icon}}</md-icon>
+              <div layout-padding> {{ menu.name }} </div>
+          </div>
+          
+        </md-list-item>
+
+      </md-content>
+
+    </md-sidenav>
     <md-nav-bar md-selected-nav-item="currentNavItem" nav-bar-aria-label="navigation links">
+      <md-button id="next" class="md-primary" ng-click="toggleLeft()">
+        <md-icon class="material-icons">menu</md-icon>
+      </md-button>
       <md-nav-item md-nav-click="vm.goto('reaction')" name="home">
         HOME
       </md-nav-item>
@@ -40,7 +69,7 @@
       </md-nav-item>
     </md-nav-bar>
   </div>
-  <ui-view layout-padding></ui-view>
+  <ui-view></ui-view>
 </body>
 
 <!-- build:js({.tmp,src}) scripts/vendor.js -->
