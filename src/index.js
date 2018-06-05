@@ -44,6 +44,7 @@ function IndexController($scope, $state, $mdSidenav) {
   self.menuList = [
     { name: 'Reaction', page:'reaction', icon: 'star'},
     { name: 'Viewer', page:'viewer', icon: 'important_devices' },
+    { name: 'File Splitter', page:'splitter', icon: 'file_copy' }
   ];
   function changeMenu(page){
     console.log(page)

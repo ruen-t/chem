@@ -27,5 +27,10 @@ function routesConfig($stateProvider, $urlRouterProvider, $locationProvider) {
       url: '/viewer',
       component: 'viewer'
     });
+    $stateProvider
+    .state('splitter', {
+      url: '/splitter',
+      component: 'splitter'
+    });
 
 }

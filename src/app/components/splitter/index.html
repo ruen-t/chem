@@ -1,0 +1,42 @@
+<section layout-padding>
+
+    <div layout-margin layout-padding layout="row">
+        <choose-file layout="row" flex="40">
+            <input id="fileInput" type="file" class="ng-hide">
+            <md-input-container flex class="md-block">
+                <input type="text" ng-model="fileName" disabled>
+                <div class="hint">Input File</div>
+            </md-input-container>
+            <div>
+                <md-button id="uploadButton" class="md-primary md-fab md-mini">
+                    <md-icon class="material-icons">attach_file</md-icon>
+                </md-button>
+            </div>
+        </choose-file>
+        <md-input-container class="md-block" style="margin-top:25px">
+            <label> Item per file</label>
+            <md-select ng-model="vm.itemPerFile">
+                <md-option ng-repeat="number in vm.number_choice" value="{{number}}">
+                    {{number}}
+                </md-option>
+            </md-select>
+        </md-input-container>
+
+
+        <md-input-container flex=20 style="margin-top:25px">
+            <md-checkbox ng-model="vm.autoDownload">
+                Auto download
+            </md-checkbox>
+        </md-input-container>
+
+        <md-button id="execute" ng-click="vm.executeFile()" class="md-fab ">
+            <md-icon class="material-icons">play_circle_outline</md-icon>
+        </md-button>
+    </div>
+    <div class="column" ng-repeat="item in vm.fileList track by $index" ng-if="$index % 4 == 0">
+        <div class="col-xs-3" ng-repeat="i in [$index, $index + 1, $index + 2, $index + 3]" ng-if="vm.fileList[i] != null">
+            <a class="output_files">{{vm.fileList[i].filename}}</a>
+        </div>
+    </div>
+    
+</section>

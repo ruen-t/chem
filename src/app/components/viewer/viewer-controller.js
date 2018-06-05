@@ -14,15 +14,15 @@ class ViewerController {
     reader.onload = function (event) {
       var data = event.target.result;
       self.sdf_list = data.split("$$$$")
-      self.sdf_list =  self.sdf_list.map(s => s.trim());
-   
+      self.sdf_list = self.sdf_list.map(s => s.trim());
+
       //console.log(self.sdf_list[1])
       self.hasOutput = true;
       changeIndex(0);
       $scope.$apply();
 
     };
-    $scope.$on('update_sdf_sample', function(event, args) {
+    $scope.$on('update_sdf_sample', function (event, args) {
       console.log("update sdf form viewController");
       console.log(args);
       var sdf_file = args;
@@ -37,7 +37,7 @@ class ViewerController {
       }).then(function (response) {
         var data = response.data;
         self.sdf_list = data.split("$$$$")
-        self.sdf_list =  self.sdf_list.map(s => s.trim());
+        self.sdf_list = self.sdf_list.map(s => s.trim());
         changeIndex(0);
 
       }, function (error) {
@@ -46,13 +46,13 @@ class ViewerController {
 
       // do what you want to do
     });
-    function executeFile(){
+    function executeFile() {
       console.log($scope.file)
       reader.readAsText($scope.file);
     }
-    
+
     var glmol01 = new GLmol('glmol01', true);
-   
+
 
 
     function loadFile() {
@@ -77,33 +77,30 @@ class ViewerController {
       var imageURI = glmol01.renderer.domElement.toDataURL("image/png");
       window.open(imageURI);
     }
-    function changeIndex(value){
-    
+    function changeIndex(value) {
       self.showIndex += value;
-      if(self.showIndex<0){
-        self.showIndex = 0;
-      } 
-      if(self.showIndex >= self.sdf_list.length){
-        self.showIndex  = self.sdf_list.length - 1;
+      if (self.showIndex <= 0) {
+        self.showIndex += self.sdf_list.length -1;
       }
-      console.log("change index "+ self.showIndex);
-     
+      self.showIndex %= self.sdf_list.length;
+      console.log("change index " + self.showIndex);
+
       $("#glmol01_src").val(self.sdf_list[self.showIndex]);
-     // console.log(self.sdf_list[self.showIndex]);
+      // console.log(self.sdf_list[self.showIndex]);
       reload();
     }
-    function reload(){
-      
+    function reload() {
+
       glmol01.loadMolecule();
-      console.log("reload: "+ glmol01.molecule_name)
+      console.log("reload: " + glmol01.molecule_name)
       self.molecule_name = glmol01.molecule_name;
-     // $scope.$apply();
-     // console.log( $("#glmol01_src").val().split("$$$$"))
+      // $scope.$apply();
+      // console.log( $("#glmol01_src").val().split("$$$$"))
       glmol01.defineRepresentation = defineRepFromController;
       glmol01.rebuildScene();
       glmol01.show();
     }
- 
+
 
     function defineRepFromController() {
       var idHeader = "#" + this.id + '_';

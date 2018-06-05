@@ -99,7 +99,7 @@ def make3DAfterReaction(mol_list, sdf_file, option, sample_size=50):
         new_mol.SetProp("_Name", name_list[i])
         new_mol.SetProp("Name", name_list[i])
         new_mol_list.append(new_mol)
-        if(i<50):
+        if(i < sample_size):
             sample_mol_list.append(new_mol)
     removeSalt = option['removeSalt']
     ionize = option['ionize']
