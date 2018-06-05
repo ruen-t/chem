@@ -40,10 +40,13 @@ class SplitterController {
                 extension = EXTENSION.sdf;
             }
             itemList = self.data.split(extension.delimiter);
+            console.log(itemList)
             self.splitList = [];
             var str = "";
             for (var i = 0; i < itemList.length; i++) {
-                str += itemList[i] + extension.delimiter;
+                if(itemList[i].length>2){
+                    str += itemList[i] + extension.delimiter;
+                }
                 if (i % item_number == 1 || i == itemList.length - 1) {
                     self.splitList.push(str);
                     str = "";
@@ -70,8 +73,9 @@ class SplitterController {
                 a_list[i].download = self.fileList[i].filename
                 if (self.autoDownload) {
                     a_list[i].click();
+                    window.URL.revokeObjectURL(self.fileList[i].url);
                 }
-                window.URL.revokeObjectURL(self.fileList[i].url);
+                
             }
 
             return true;
