@@ -2,7 +2,7 @@ var host = "http://35.198.250.233/"
 var RUN_REACTION_API = host + "upload?cleanInput=1"
 var REACTION_API = host + "resource/reaction"
 var GET_OUTPUT_API = host + 'download/'
-var CHECK_SMART_API = host + 'tools/smart/'
+var CHECK_SMART_API = host + 'tools/smarts?q='
 var GET_RAW_SDF = host + 'viewfile/'
 var TYPE_REACTION = 0;
 var TYPE_OPTION = 1;
