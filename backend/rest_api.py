@@ -67,18 +67,20 @@ def findReactionById(id):
 def readFile(filename):
     smiles_file = open(filename,"r")
     mol_list = []
-    for line in smiles_file:
+    for index, line in enumerate(smiles_file):
         split_text = line.split('\t')
         if(len(split_text) < 2):
             split_text = line.split(' ')
             if(len(split_text) < 2):
-                split_text = line.split(',')
+                split_text = [line]
         smiles = split_text[0]
         name = ''
         for i in range(len(split_text)):
             if(i>0):
                 name += split_text[i]
         name = name.rstrip()
+        if len(name) == 0:
+            name = "unspecified_"+str(index)
         mol = Chem.MolFromSmiles(smiles)
         mol.SetProp('_Name', name)
         mol_list.append(mol)
@@ -95,6 +97,7 @@ def make3DAfterReaction(mol_list, sdf_file, option, sample_size=50):
     for i  in range(len(smile_list)):
         new_mol = Chem.MolFromSmiles(smile_list[i])
         new_mol.SetProp("_Name", name_list[i])
+        new_mol.SetProp("Name", name_list[i])
         new_mol_list.append(new_mol)
         if(i<50):
             sample_mol_list.append(new_mol)
