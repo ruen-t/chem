@@ -8,6 +8,7 @@ class ViewerController {
     self.showIndex = 0;
     self.molecule_name = "";
     self.changeIndex = changeIndex;
+    self.hasOutput = false;
 
     var reader = new FileReader();
     reader.onload = function (event) {
@@ -16,6 +17,7 @@ class ViewerController {
       self.sdf_list =  self.sdf_list.map(s => s.trim());
    
       //console.log(self.sdf_list[1])
+      self.hasOutput = true;
       changeIndex(0);
       $scope.$apply();
 
